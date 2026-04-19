@@ -37,20 +37,28 @@
     return Number.isFinite(n) && n >= 0 ? n : 0;
   }
 
+  function formatYen(n) {
+    return Math.round(n).toLocaleString("ja-JP");
+  }
+
   function updatePopularity() {
     const r = readUnits($("red-units"));
     const b = readUnits($("blue-units"));
     const total = r + b;
+    const pool = total * UNIT_PRICE;
 
     $("red-yen").textContent = (r * UNIT_PRICE).toLocaleString("ja-JP");
     $("blue-yen").textContent = (b * UNIT_PRICE).toLocaleString("ja-JP");
     $("total-units").textContent = total.toLocaleString("ja-JP");
-    $("total-yen").textContent = (total * UNIT_PRICE).toLocaleString("ja-JP");
+    $("total-yen").textContent = pool.toLocaleString("ja-JP");
 
     const barR = $("bar-red");
     const barB = $("bar-blue");
     const badgeR = $("red-badge");
     const badgeB = $("blue-badge");
+
+    $("red-payout-est").textContent = "—";
+    $("blue-payout-est").textContent = "—";
 
     if (total === 0) {
       badgeR.textContent = "—";
@@ -66,6 +74,13 @@
       $("legend-red-pct").textContent = "0";
       $("legend-blue-pct").textContent = "0";
       return;
+    }
+
+    if (r > 0) {
+      $("red-payout-est").textContent = formatYen(pool / r);
+    }
+    if (b > 0) {
+      $("blue-payout-est").textContent = formatYen(pool / b);
     }
 
     barR.classList.remove("is-empty");

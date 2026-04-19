@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="赤・青コーナーの購入口数から人気を表示。一口10万円。時計とタイマー（個人用）" />
   <meta name="theme-color" content="#1a2535" />
-  <title>コーナー投票ボード（個人用）</title>
+  <title>投票</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -13,12 +13,8 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body class="page-root">
-  <div class="app glass-app">
-    <header class="header">
-      <div>
-        <h1>コーナー投票ボード</h1>
-        <p class="lead">赤コーナーと青コーナーのみ。一口 <strong>10万円</strong>。購入口数を入れると、今の投票割合で人気が分かります。</p>
-      </div>
+  <div class="app glass">
+    <header class="header glass">
       <div class="clock-block" aria-live="polite">
         <span class="clock-label">現在時刻</span>
         <time id="clock" class="clock">--:--:--</time>
@@ -26,10 +22,9 @@
       </div>
     </header>
 
-    <section class="panel" aria-labelledby="timer-heading">
-      <h2 id="timer-heading">タイマー</h2>
+    <section class="panel" aria-label="タイマー">
       <div class="timer-grid">
-        <div class="card">
+        <div class="card glass">
           <h3>ストップウォッチ</h3>
           <p class="mono big" id="sw-display">00:00.00</p>
           <div class="btn-row">
@@ -39,7 +34,7 @@
           </div>
           <ul id="sw-laps" class="laps"></ul>
         </div>
-        <div class="card">
+        <div class="card glass">
           <h3>カウントダウン</h3>
           <div class="cd-inputs">
             <label>分 <input type="number" id="cd-min" min="0" max="599" value="5" /></label>
@@ -55,9 +50,8 @@
       </div>
     </section>
 
-    <section class="panel" aria-labelledby="vote-heading">
+    <section class="panel" aria-label="コーナー投票">
       <div class="panel-head">
-        <h2 id="vote-heading">赤コーナー vs 青コーナー</h2>
         <div class="panel-actions">
           <button type="button" id="reset-corners" class="btn ghost sm">口数をリセット</button>
           <button type="button" id="export-json" class="btn sm">JSONを保存</button>
@@ -67,14 +61,14 @@
       <p class="hint">購入口数は手入力です。合計口数に対する割合＝今の人気イメージです。データはブラウザ内に保存され、送信しません。</p>
       <p id="save-status" class="save-status" aria-live="polite"></p>
 
-      <div class="unit-price-banner">
+      <div class="unit-price-banner glass">
         <span class="unit-price-label">一口</span>
         <span class="unit-price-value mono">100,000</span>
         <span class="unit-price-yen">円</span>
       </div>
 
       <div class="corner-grid">
-        <div class="corner-card corner-red">
+        <div class="corner-card corner-red glass">
           <div class="corner-card-head">
             <h3 class="corner-title">赤コーナー</h3>
             <p class="pop-badge" id="red-badge" aria-live="polite">—</p>
@@ -83,8 +77,13 @@
           <input type="number" id="red-units" class="corner-input mono" min="0" step="1" value="0" inputmode="numeric" />
           <p class="corner-sub">購入金額 <span id="red-yen" class="mono">0</span> 円</p>
           <p class="corner-pct mono" id="red-pct">投票シェア —</p>
+          <p class="payout-est">
+            <span class="payout-est-label">勝利時 一口払戻目安</span>
+            <span id="red-payout-est" class="mono payout-est-value">—</span>
+            <span class="payout-est-yen">円</span>
+          </p>
         </div>
-        <div class="corner-card corner-blue">
+        <div class="corner-card corner-blue glass">
           <div class="corner-card-head">
             <h3 class="corner-title">青コーナー</h3>
             <p class="pop-badge" id="blue-badge" aria-live="polite">—</p>
@@ -93,11 +92,15 @@
           <input type="number" id="blue-units" class="corner-input mono" min="0" step="1" value="0" inputmode="numeric" />
           <p class="corner-sub">購入金額 <span id="blue-yen" class="mono">0</span> 円</p>
           <p class="corner-pct mono" id="blue-pct-text">投票シェア —</p>
+          <p class="payout-est">
+            <span class="payout-est-label">勝利時 一口払戻目安</span>
+            <span id="blue-payout-est" class="mono payout-est-value">—</span>
+            <span class="payout-est-yen">円</span>
+          </p>
         </div>
       </div>
 
-      <div class="pop-visual" aria-labelledby="pop-visual-label">
-        <p id="pop-visual-label" class="pop-visual-title">現在の人気（購入口数ベース）</p>
+      <div class="pop-visual glass" aria-label="人気の割合">
         <div class="pop-bar-track" role="img" aria-label="赤と青の割合">
           <div class="pop-bar-seg pop-bar-red" id="bar-red"></div>
           <div class="pop-bar-seg pop-bar-blue" id="bar-blue"></div>
@@ -108,15 +111,16 @@
         </div>
       </div>
 
-      <p class="total-line">
+      <p class="total-line glass">
         合計 <strong id="total-units" class="mono">0</strong> 口
         · 合計金額 <strong id="total-yen" class="mono">0</strong> 円
       </p>
+      <p class="payout-footnote">一口払戻目安＝合計プール÷そのコーナーの口数（控除なしの単純モデル）。実際の配当とは一致しません。</p>
     </section>
 
     <footer class="footer">
       <p>個人利用・学習用。賭博の勧誘や仲介は行いません。</p>
-      <p class="version">コーナー投票ボード v2 · ブラウザに自動保存（JSONの保存・読込も可）</p>
+      <p class="version">v2 · ブラウザに自動保存</p>
     </footer>
   </div>
   <noscript><p class="noscript">JavaScript を有効にすると利用できます。</p></noscript>
