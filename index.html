@@ -13,8 +13,8 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body class="page-root">
-  <div class="app glass">
-    <header class="header glass">
+  <div class="app app-shell">
+    <header class="header">
       <div class="clock-block" aria-live="polite">
         <span class="clock-label">現在時刻</span>
         <time id="clock" class="clock">--:--:--</time>
@@ -24,7 +24,7 @@
 
     <section class="panel" aria-label="タイマー">
       <div class="timer-grid">
-        <div class="card glass">
+        <div class="card surface">
           <h3>ストップウォッチ</h3>
           <p class="mono big" id="sw-display">00:00.00</p>
           <div class="btn-row">
@@ -34,7 +34,7 @@
           </div>
           <ul id="sw-laps" class="laps"></ul>
         </div>
-        <div class="card glass">
+        <div class="card surface">
           <h3>カウントダウン</h3>
           <div class="cd-inputs">
             <label>分 <input type="number" id="cd-min" min="0" max="599" value="5" /></label>
@@ -61,14 +61,14 @@
       <p class="hint">購入口数は手入力です。合計口数に対する割合＝今の人気イメージです。データはブラウザ内に保存され、送信しません。</p>
       <p id="save-status" class="save-status" aria-live="polite"></p>
 
-      <div class="unit-price-banner glass">
+      <div class="unit-price-banner surface">
         <span class="unit-price-label">一口</span>
         <span class="unit-price-value mono">100,000</span>
         <span class="unit-price-yen">円</span>
       </div>
 
       <div class="corner-grid">
-        <div class="corner-card corner-red glass">
+        <div class="corner-card corner-red surface">
           <div class="corner-card-head">
             <h3 class="corner-title">赤コーナー</h3>
             <p class="pop-badge" id="red-badge" aria-live="polite">—</p>
@@ -83,7 +83,7 @@
             <span class="payout-est-yen">円</span>
           </p>
         </div>
-        <div class="corner-card corner-blue glass">
+        <div class="corner-card corner-blue surface">
           <div class="corner-card-head">
             <h3 class="corner-title">青コーナー</h3>
             <p class="pop-badge" id="blue-badge" aria-live="polite">—</p>
@@ -100,7 +100,7 @@
         </div>
       </div>
 
-      <div class="pop-visual glass" aria-label="人気の割合">
+      <div class="pop-visual surface" aria-label="人気の割合">
         <div class="pop-bar-track" role="img" aria-label="赤と青の割合">
           <div class="pop-bar-seg pop-bar-red" id="bar-red"></div>
           <div class="pop-bar-seg pop-bar-blue" id="bar-blue"></div>
@@ -111,7 +111,7 @@
         </div>
       </div>
 
-      <p class="total-line glass">
+      <p class="total-line surface">
         合計 <strong id="total-units" class="mono">0</strong> 口
         · 合計金額 <strong id="total-yen" class="mono">0</strong> 円
       </p>

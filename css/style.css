@@ -12,19 +12,26 @@
   --corner-red-dim: #8b2e2e;
   --corner-blue: #4da3ff;
   --corner-blue-dim: #2563a8;
-  --gold: #ffd88a;
-  --radius: 14px;
-  --shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
+  --gold: #e8c88a;
+  --radius: 12px;
+  --shadow-soft: 0 10px 36px rgba(0, 0, 0, 0.14);
 }
 
-/* すりガラス（共通） */
-.glass {
-  background-color: transparent;
-  backdrop-filter: blur(9px);
-  -webkit-backdrop-filter: blur(9px);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+/* 外枠だけすりガラス（1枚） */
+.app-shell {
+  background: rgba(12, 18, 28, 0.48);
+  backdrop-filter: blur(14px) saturate(125%);
+  -webkit-backdrop-filter: blur(14px) saturate(125%);
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-radius: 16px;
+  box-shadow: var(--shadow-soft);
+}
+
+/* 内側はフラットな半透明（ブラー重ねない） */
+.surface {
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius);
 }
 
 *,
@@ -53,17 +60,20 @@ body.page-root {
   padding: clamp(0.35rem, 1vmin, 0.75rem);
 }
 
-/* 背景画像（ロゴ）を単体レイヤーで表示 */
+/* 背景：ロゴは小さめ・中央寄せ、周囲はグラデ */
 .page-root::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: 0;
-  background: url("../assets/background.png") center center / cover no-repeat #c5d2e0;
+  background-color: #a8b4c4;
+  background-image: url("../assets/background.png");
+  background-repeat: no-repeat;
+  background-position: center 22%;
+  background-size: min(26vw, 300px) auto;
   pointer-events: none;
 }
 
-/* 薄いオーバーレイのみ（画像を隠しすぎない） */
 .page-root::after {
   content: "";
   position: fixed;
@@ -71,14 +81,14 @@ body.page-root {
   z-index: 0;
   background: linear-gradient(
     165deg,
-    rgba(255, 255, 255, 0.2) 0%,
-    rgba(18, 28, 42, 0.28) 50%,
-    rgba(12, 20, 32, 0.35) 100%
+    rgba(248, 250, 252, 0.22) 0%,
+    rgba(28, 38, 52, 0.32) 55%,
+    rgba(16, 24, 36, 0.4) 100%
   );
   pointer-events: none;
 }
 
-.app.glass {
+.app.app-shell {
   position: relative;
   z-index: 1;
   width: 100%;
@@ -86,7 +96,7 @@ body.page-root {
   max-height: min(1080px, calc(100vh - 0.75rem));
   max-height: min(1080px, calc(100dvh - 0.75rem));
   margin: 0 auto;
-  padding: clamp(0.75rem, 2vmin, 1.35rem) clamp(1rem, 2.5vw, 1.75rem) clamp(0.85rem, 2vmin, 1.25rem);
+  padding: clamp(0.85rem, 2vmin, 1.25rem) clamp(1rem, 2.5vw, 1.5rem) clamp(0.9rem, 2vmin, 1.2rem);
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -97,9 +107,9 @@ body.page-root {
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: clamp(0.75rem, 2vw, 1.5rem);
-  margin-bottom: clamp(0.85rem, 2vh, 1.35rem);
-  padding: clamp(0.65rem, 1.5vh, 1rem) clamp(0.75rem, 2vw, 1.1rem);
+  gap: 0.75rem;
+  margin-bottom: clamp(0.75rem, 2vh, 1.1rem);
+  padding: 0;
 }
 
 h1 {
@@ -118,33 +128,38 @@ h1 {
 }
 
 .clock-block {
-  padding: 0.75rem 1rem;
   text-align: right;
-  min-width: 180px;
+  min-width: 11rem;
   margin-left: auto;
+  padding: 0.45rem 1rem 0.5rem 1.1rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .clock-label {
   display: block;
-  font-size: 0.75rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  margin-bottom: 0.25rem;
+  color: rgba(200, 215, 235, 0.75);
+  margin-bottom: 0.15rem;
 }
 
 .clock {
   font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: var(--accent);
+  font-size: 1.28rem;
+  font-weight: 500;
+  color: #eef4fc;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
 }
 
 .clock-date {
   display: block;
-  font-size: 0.85rem;
-  color: var(--muted);
-  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  color: rgba(180, 198, 220, 0.88);
+  margin-top: 0.2rem;
 }
 
 .panel {
@@ -190,9 +205,8 @@ h1 {
   }
 }
 
-.card.glass {
-  padding: clamp(0.85rem, 2vh, 1.15rem);
-  border-radius: 16px;
+.card.surface {
+  padding: clamp(0.85rem, 2vh, 1.1rem);
 }
 
 .card.compact h3 {
@@ -225,20 +239,18 @@ h1 {
 .btn {
   font-family: inherit;
   font-size: 0.875rem;
-  padding: 0.5rem 1rem;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.1);
+  padding: 0.45rem 0.95rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  transition: background 0.15s, border-color 0.15s;
 }
 
 .btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .btn:disabled {
@@ -247,18 +259,17 @@ h1 {
 }
 
 .btn.primary {
-  background: linear-gradient(165deg, rgba(61, 156, 245, 0.85), rgba(37, 99, 168, 0.9));
-  border-color: rgba(120, 190, 255, 0.45);
+  background: rgba(55, 130, 210, 0.75);
+  border-color: rgba(130, 185, 240, 0.35);
   color: #fff;
-  box-shadow: 0 4px 16px rgba(45, 120, 200, 0.35);
 }
 
 .btn.primary:hover:not(:disabled) {
-  background: linear-gradient(165deg, rgba(80, 170, 255, 0.95), rgba(45, 110, 190, 0.95));
+  background: rgba(70, 145, 220, 0.88);
 }
 
 .btn.ghost {
-  background: rgba(255, 255, 255, 0.04);
+  background: transparent;
 }
 
 .btn.sm {
@@ -479,14 +490,13 @@ h1 {
   color: var(--danger);
 }
 
-.unit-price-banner.glass {
+.unit-price-banner.surface {
   display: flex;
   align-items: baseline;
   justify-content: center;
   gap: 0.5rem;
   margin-bottom: clamp(0.75rem, 2vh, 1.1rem);
-  padding: 0.65rem 1rem;
-  border-radius: 16px;
+  padding: 0.55rem 0.95rem;
 }
 
 .unit-price-label {
@@ -495,9 +505,9 @@ h1 {
 }
 
 .unit-price-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--accent);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #8ec8ff;
 }
 
 .unit-price-yen {
@@ -518,17 +528,16 @@ h1 {
   }
 }
 
-.corner-card.glass {
-  padding: clamp(0.85rem, 2vh, 1.15rem);
-  border-radius: 16px;
+.corner-card.surface {
+  padding: clamp(0.8rem, 2vh, 1.05rem);
 }
 
 .corner-red {
-  border-top: 4px solid var(--corner-red);
+  box-shadow: inset 0 3px 0 0 var(--corner-red);
 }
 
 .corner-blue {
-  border-top: 4px solid var(--corner-blue);
+  box-shadow: inset 0 3px 0 0 var(--corner-blue);
 }
 
 .corner-card-head {
@@ -564,7 +573,6 @@ h1 {
 
 .pop-badge.is-first {
   color: var(--gold);
-  text-shadow: 0 0 20px rgba(240, 198, 116, 0.35);
 }
 
 .pop-badge.is-second {
@@ -654,9 +662,8 @@ h1 {
   margin-bottom: 1rem;
 }
 
-.pop-visual.glass {
-  padding: 0.75rem 0.85rem;
-  border-radius: 16px;
+.pop-visual.surface {
+  padding: 0.65rem 0.75rem;
 }
 
 .pop-visual-title {
@@ -719,24 +726,31 @@ h1 {
   background: var(--corner-blue);
 }
 
-.total-line.glass {
+.total-line.surface {
   margin: 0;
   font-size: clamp(0.9rem, 1.8vw, 1rem);
-  padding: 0.65rem 1rem;
-  border-radius: 16px;
+  padding: 0.55rem 0.9rem;
 }
 
 .total-line strong {
-  color: var(--accent);
+  color: #a8d4ff;
+  font-weight: 600;
 }
 
 @media (max-width: 640px) {
   .header {
     flex-direction: column;
+    align-items: stretch;
   }
 
   .clock-block {
-    text-align: left;
+    text-align: center;
     width: 100%;
+    margin-left: 0;
+  }
+
+  .page-root::before {
+    background-size: min(52vw, 240px) auto;
+    background-position: center 15%;
   }
 }
