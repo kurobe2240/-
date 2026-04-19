@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="手入力オッズ・人気順の整理、配当イメージ計算、時計とタイマー（個人用）" />
+  <title>レース情報ボード（個人用）</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div>
+        <h1>レース情報ボード</h1>
+        <p class="lead">オッズ・人気は手入力。配当は100円あたりの目安（単勝イメージ）です。</p>
+      </div>
+      <div class="clock-block" aria-live="polite">
+        <span class="clock-label">現在時刻</span>
+        <time id="clock" class="clock">--:--:--</time>
+        <span id="clock-date" class="clock-date"></span>
+      </div>
+    </header>
+
+    <section class="panel" aria-labelledby="timer-heading">
+      <h2 id="timer-heading">タイマー</h2>
+      <div class="timer-grid">
+        <div class="card">
+          <h3>ストップウォッチ</h3>
+          <p class="mono big" id="sw-display">00:00.00</p>
+          <div class="btn-row">
+            <button type="button" id="sw-start" class="btn primary">開始</button>
+            <button type="button" id="sw-lap" class="btn">ラップ</button>
+            <button type="button" id="sw-reset" class="btn ghost">リセット</button>
+          </div>
+          <ul id="sw-laps" class="laps"></ul>
+        </div>
+        <div class="card">
+          <h3>カウントダウン</h3>
+          <div class="cd-inputs">
+            <label>分 <input type="number" id="cd-min" min="0" max="599" value="5" /></label>
+            <label>秒 <input type="number" id="cd-sec" min="0" max="59" value="0" /></label>
+          </div>
+          <p class="mono big" id="cd-display">05:00</p>
+          <div class="btn-row">
+            <button type="button" id="cd-start" class="btn primary">開始</button>
+            <button type="button" id="cd-pause" class="btn" disabled>一時停止</button>
+            <button type="button" id="cd-reset" class="btn ghost">リセット</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="odds-heading">
+      <div class="panel-head">
+        <h2 id="odds-heading">オッズ・人気リスト</h2>
+        <div class="panel-actions">
+          <button type="button" id="add-row" class="btn primary sm">行を追加</button>
+          <button type="button" id="sort-pop" class="btn sm">人気順で並べ替え</button>
+          <button type="button" id="clear-rows" class="btn ghost sm">全削除</button>
+        </div>
+      </div>
+      <p class="hint">公表されているオッズをご自身で入力してください。サイトはデータを送信しません（ブラウザ内のみ）。</p>
+
+      <div class="table-wrap">
+        <table class="odds-table">
+          <thead>
+            <tr>
+              <th scope="col">番号</th>
+              <th scope="col">名前</th>
+              <th scope="col">単勝オッズ</th>
+              <th scope="col">人気</th>
+              <th scope="col">100円あたり払戻（目安）</th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody id="odds-body"></tbody>
+        </table>
+      </div>
+
+      <div class="calc-row">
+        <div class="card compact">
+          <h3>賭け金からの払戻（単勝イメージ）</h3>
+          <label class="inline">オッズ <input type="number" id="calc-odds" step="0.1" min="1" placeholder="例: 12.5" /></label>
+          <label class="inline">賭け金（円） <input type="number" id="calc-stake" min="1" value="100" /></label>
+          <p class="result">払戻の目安: <strong id="calc-payout">—</strong> 円</p>
+        </div>
+        <div class="card compact">
+          <h3>オッズから逆算した勝率イメージ（単純モデル）</h3>
+          <p class="small">各オッズの「1÷オッズ」を正規化した割合です。実際の控除率は考慮していません。</p>
+          <button type="button" id="btn-implied" class="btn sm">テーブルから計算</button>
+          <ul id="implied-list" class="implied-list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>個人利用・学習用。賭博の勧誘や仲介は行いません。公表データの利用は各提供元の規約に従ってください。</p>
+    </footer>
+  </div>
+  <script src="js/app.js"></script>
+</body>
+</html>
