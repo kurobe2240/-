@@ -1,19 +1,12 @@
 (function () {
   "use strict";
 
-  const STORAGE_KEY = "race-dashboard-v1";
+  const STORAGE_KEY = "race-dashboard-v2";
+  const UNIT_PRICE = 100000;
   const $ = (id) => document.getElementById(id);
 
   function pad2(n) {
     return String(n).padStart(2, "0");
-  }
-
-  function escAttr(s) {
-    return String(s)
-      .replace(/&/g, "&amp;")
-      .replace(/"/g, "&quot;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
   }
 
   let saveTimer = null;
@@ -39,27 +32,84 @@
     }, 250);
   }
 
-  function collectRows() {
-    const rows = [];
-    oddsBody.querySelectorAll("tr").forEach(function (tr) {
-      rows.push({
-        num: tr.querySelector(".inp-num").value,
-        name: tr.querySelector(".inp-name").value,
-        odds: tr.querySelector(".inp-odds").value,
-        pop: tr.querySelector(".inp-pop").value,
-      });
-    });
-    return rows;
+  function readUnits(inp) {
+    const n = parseInt(inp.value, 10);
+    return Number.isFinite(n) && n >= 0 ? n : 0;
+  }
+
+  function updatePopularity() {
+    const r = readUnits($("red-units"));
+    const b = readUnits($("blue-units"));
+    const total = r + b;
+
+    $("red-yen").textContent = (r * UNIT_PRICE).toLocaleString("ja-JP");
+    $("blue-yen").textContent = (b * UNIT_PRICE).toLocaleString("ja-JP");
+    $("total-units").textContent = total.toLocaleString("ja-JP");
+    $("total-yen").textContent = (total * UNIT_PRICE).toLocaleString("ja-JP");
+
+    const barR = $("bar-red");
+    const barB = $("bar-blue");
+    const badgeR = $("red-badge");
+    const badgeB = $("blue-badge");
+
+    if (total === 0) {
+      badgeR.textContent = "—";
+      badgeB.textContent = "—";
+      badgeR.className = "pop-badge";
+      badgeB.className = "pop-badge";
+      $("red-pct").textContent = "投票シェア —";
+      $("blue-pct-text").textContent = "投票シェア —";
+      barR.style.width = "50%";
+      barB.style.width = "50%";
+      barR.classList.add("is-empty");
+      barB.classList.add("is-empty");
+      $("legend-red-pct").textContent = "0";
+      $("legend-blue-pct").textContent = "0";
+      return;
+    }
+
+    barR.classList.remove("is-empty");
+    barB.classList.remove("is-empty");
+
+    const rp = (r / total) * 100;
+    const bp = (b / total) * 100;
+    const rpStr = rp.toFixed(1);
+    const bpStr = bp.toFixed(1);
+
+    $("red-pct").textContent =
+      "投票シェア " + rpStr + "%（" + r.toLocaleString("ja-JP") + " / " + total.toLocaleString("ja-JP") + " 口）";
+    $("blue-pct-text").textContent =
+      "投票シェア " + bpStr + "%（" + b.toLocaleString("ja-JP") + " / " + total.toLocaleString("ja-JP") + " 口）";
+
+    barR.style.width = rp + "%";
+    barB.style.width = bp + "%";
+
+    $("legend-red-pct").textContent = rpStr;
+    $("legend-blue-pct").textContent = bpStr;
+
+    if (r > b) {
+      badgeR.textContent = "人気 1位";
+      badgeB.textContent = "人気 2位";
+      badgeR.className = "pop-badge is-first";
+      badgeB.className = "pop-badge is-second";
+    } else if (b > r) {
+      badgeB.textContent = "人気 1位";
+      badgeR.textContent = "人気 2位";
+      badgeB.className = "pop-badge is-first";
+      badgeR.className = "pop-badge is-second";
+    } else {
+      badgeR.textContent = "同率 1位";
+      badgeB.textContent = "同率 1位";
+      badgeR.className = "pop-badge is-tie";
+      badgeB.className = "pop-badge is-tie";
+    }
   }
 
   function saveState() {
     const data = {
-      version: 1,
-      rows: collectRows(),
-      calc: {
-        odds: $("calc-odds").value,
-        stake: $("calc-stake").value,
-      },
+      version: 2,
+      redUnits: $("red-units").value,
+      blueUnits: $("blue-units").value,
       cd: {
         min: $("cd-min").value,
         sec: $("cd-sec").value,
@@ -73,6 +123,32 @@
         el.textContent = "保存できませんでした（容量制限など）";
         el.classList.remove("is-ok");
       }
+    }
+  }
+
+  function applyData(data) {
+    if (!data || data.version !== 2) return false;
+    if (data.redUnits != null) $("red-units").value = data.redUnits;
+    if (data.blueUnits != null) $("blue-units").value = data.blueUnits;
+    if (data.cd) {
+      if (data.cd.min != null) $("cd-min").value = data.cd.min;
+      if (data.cd.sec != null) $("cd-sec").value = data.cd.sec;
+    }
+    cdLeftSec = cdReadInputs();
+    cdUpdateDisplay();
+    updatePopularity();
+    saveState();
+    return true;
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return false;
+      const data = JSON.parse(raw);
+      return applyData(data);
+    } catch (e) {
+      return false;
     }
   }
 
@@ -142,7 +218,6 @@
     $("sw-start").textContent = "開始";
   });
 
-  let cdTotalSec = 0;
   let cdLeftSec = 0;
   let cdTimer = null;
   let cdRunning = false;
@@ -166,8 +241,7 @@
   $("cd-start").addEventListener("click", function () {
     if (cdRunning) return;
     if (cdLeftSec <= 0) {
-      cdTotalSec = cdReadInputs();
-      cdLeftSec = cdTotalSec;
+      cdLeftSec = cdReadInputs();
     }
     if (cdLeftSec <= 0) return;
     cdRunning = true;
@@ -215,149 +289,37 @@
     saveState();
   });
 
-  $("cd-min").addEventListener("input", function () {
-    scheduleSave();
-  });
-  $("cd-sec").addEventListener("input", function () {
-    scheduleSave();
-  });
+  $("cd-min").addEventListener("input", scheduleSave);
+  $("cd-sec").addEventListener("input", scheduleSave);
 
   cdLeftSec = cdReadInputs();
   cdUpdateDisplay();
 
-  const oddsBody = $("odds-body");
-  let rowId = 0;
-
-  function payoutFor100(odds) {
-    const o = Number(odds);
-    if (!Number.isFinite(o) || o < 1) return "—";
-    return Math.round(o * 100).toLocaleString("ja-JP");
-  }
-
-  function attachRowHandlers(tr) {
-    const oddsInput = tr.querySelector(".inp-odds");
-    const payoutCell = tr.querySelector(".payout-cell");
-
-    function updatePayout() {
-      payoutCell.textContent = payoutFor100(oddsInput.value);
-    }
-
-    oddsInput.addEventListener("input", updatePayout);
-    updatePayout();
-
-    tr.querySelectorAll("input").forEach(function (inp) {
-      inp.addEventListener("input", scheduleSave);
-    });
-
-    tr.querySelector(".btn-del").addEventListener("click", function () {
-      tr.remove();
-      saveState();
-      showSaveStatus();
-    });
-  }
-
-  function addRow(data) {
-    rowId += 1;
-    const tr = document.createElement("tr");
-    tr.dataset.rowId = String(rowId);
-    const num = data && data.num != null ? data.num : "";
-    const name = data && data.name != null ? data.name : "";
-    const odds = data && data.odds != null ? data.odds : "";
-    const pop = data && data.pop != null ? data.pop : "";
-    tr.innerHTML = `
-      <td><input type="text" class="inp-num num" inputmode="numeric" placeholder="1" value="${escAttr(num)}" /></td>
-      <td><input type="text" class="inp-name" placeholder="馬名" value="${escAttr(name)}" /></td>
-      <td><input type="number" class="inp-odds" step="0.1" min="1" placeholder="例: 3.2" value="${escAttr(odds)}" /></td>
-      <td><input type="number" class="inp-pop num" min="1" step="1" placeholder="人気" value="${escAttr(pop)}" /></td>
-      <td class="payout-cell">—</td>
-      <td><button type="button" class="btn-icon btn-del">削除</button></td>
-    `;
-    oddsBody.appendChild(tr);
-    attachRowHandlers(tr);
-  }
-
-  function applyData(data) {
-    if (!data || !Array.isArray(data.rows)) return false;
-    oddsBody.innerHTML = "";
-    if (data.rows.length === 0) {
-      addRow({ num: "1", name: "", odds: "", pop: "1" });
-      addRow({ num: "2", name: "", odds: "", pop: "2" });
-    } else {
-      data.rows.forEach(function (r) {
-        addRow({
-          num: r.num != null ? r.num : "",
-          name: r.name != null ? r.name : "",
-          odds: r.odds != null ? r.odds : "",
-          pop: r.pop != null ? r.pop : "",
-        });
-      });
-    }
-    if (data.calc) {
-      if (data.calc.odds != null) $("calc-odds").value = data.calc.odds;
-      if (data.calc.stake != null) $("calc-stake").value = data.calc.stake;
-    }
-    if (data.cd) {
-      if (data.cd.min != null) $("cd-min").value = data.cd.min;
-      if (data.cd.sec != null) $("cd-sec").value = data.cd.sec;
-    }
-    cdLeftSec = cdReadInputs();
-    cdUpdateDisplay();
-    updateCalcPayout();
-    saveState();
-    return true;
-  }
-
-  function loadState() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return false;
-      const data = JSON.parse(raw);
-      return applyData(data);
-    } catch (e) {
-      return false;
-    }
-  }
-
-  $("add-row").addEventListener("click", function () {
-    addRow({});
-    saveState();
-    showSaveStatus();
+  $("red-units").addEventListener("input", function () {
+    updatePopularity();
+    scheduleSave();
+  });
+  $("blue-units").addEventListener("input", function () {
+    updatePopularity();
+    scheduleSave();
   });
 
-  $("sort-pop").addEventListener("click", function () {
-    const rows = Array.from(oddsBody.querySelectorAll("tr"));
-    rows.sort(function (a, b) {
-      const pa = parseInt(a.querySelector(".inp-pop").value, 10);
-      const pb = parseInt(b.querySelector(".inp-pop").value, 10);
-      const na = Number.isFinite(pa) ? pa : 9999;
-      const nb = Number.isFinite(pb) ? pb : 9999;
-      return na - nb;
-    });
-    rows.forEach(function (r) {
-      oddsBody.appendChild(r);
-    });
-    saveState();
-    showSaveStatus();
-  });
-
-  $("clear-rows").addEventListener("click", function () {
-    if (!window.confirm("表のすべての行を削除しますか？")) return;
-    oddsBody.innerHTML = "";
-    addRow({ num: "1", name: "", odds: "", pop: "1" });
-    addRow({ num: "2", name: "", odds: "", pop: "2" });
+  $("reset-corners").addEventListener("click", function () {
+    if (!window.confirm("赤・青の購入口数を 0 にリセットしますか？")) return;
+    $("red-units").value = "0";
+    $("blue-units").value = "0";
+    updatePopularity();
     saveState();
     showSaveStatus();
   });
 
   $("export-json").addEventListener("click", function () {
     const payload = {
-      version: 1,
+      version: 2,
       exportedAt: new Date().toISOString(),
-      rows: collectRows(),
-      calc: {
-        odds: $("calc-odds").value,
-        stake: $("calc-stake").value,
-      },
+      unitPriceYen: UNIT_PRICE,
+      redUnits: $("red-units").value,
+      blueUnits: $("blue-units").value,
       cd: {
         min: $("cd-min").value,
         sec: $("cd-sec").value,
@@ -366,7 +328,7 @@
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "race-dashboard-backup.json";
+    a.download = "corner-vote-backup.json";
     a.click();
     URL.revokeObjectURL(a.href);
   });
@@ -382,7 +344,7 @@
         if (applyData(data)) {
           showSaveStatus();
         } else {
-          window.alert("JSONの形式が正しくありません（rows が必要です）。");
+          window.alert("JSONの形式が正しくありません（version: 2 が必要です）。");
         }
       } catch (err) {
         window.alert("ファイルを読み込めませんでした。");
@@ -392,64 +354,8 @@
   });
 
   if (!loadState()) {
-    addRow({ num: "1", name: "", odds: "", pop: "1" });
-    addRow({ num: "2", name: "", odds: "", pop: "2" });
+    updatePopularity();
   }
-
-  function updateCalcPayout() {
-    const odds = parseFloat($("calc-odds").value);
-    const stake = parseFloat($("calc-stake").value);
-    if (!Number.isFinite(odds) || odds < 1 || !Number.isFinite(stake) || stake <= 0) {
-      $("calc-payout").textContent = "—";
-      return;
-    }
-    const p = Math.round(stake * odds);
-    $("calc-payout").textContent = p.toLocaleString("ja-JP");
-  }
-
-  $("calc-odds").addEventListener("input", function () {
-    updateCalcPayout();
-    scheduleSave();
-  });
-  $("calc-stake").addEventListener("input", function () {
-    updateCalcPayout();
-    scheduleSave();
-  });
-  updateCalcPayout();
-
-  $("btn-implied").addEventListener("click", function () {
-    const rows = oddsBody.querySelectorAll("tr");
-    const items = [];
-    rows.forEach(function (tr) {
-      const name = tr.querySelector(".inp-name").value.trim() || "(無名)";
-      const odds = parseFloat(tr.querySelector(".inp-odds").value);
-      if (Number.isFinite(odds) && odds >= 1) {
-        items.push({ name: name, odds: odds, implied: 1 / odds });
-      }
-    });
-    const sum = items.reduce(function (a, b) {
-      return a + b.implied;
-    }, 0);
-    const ul = $("implied-list");
-    ul.innerHTML = "";
-    if (items.length === 0 || sum <= 0) {
-      const li = document.createElement("li");
-      li.textContent = "有効なオッズ行がありません。";
-      ul.appendChild(li);
-      return;
-    }
-    items.forEach(function (it) {
-      const pct = ((it.implied / sum) * 100).toFixed(1);
-      const li = document.createElement("li");
-      const span1 = document.createElement("span");
-      span1.textContent = it.name;
-      const span2 = document.createElement("span");
-      span2.textContent = pct + "%";
-      li.appendChild(span1);
-      li.appendChild(span2);
-      ul.appendChild(li);
-    });
-  });
 
   window.addEventListener("beforeunload", function () {
     saveState();

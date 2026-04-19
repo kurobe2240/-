@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="手入力オッズ・人気順の整理、配当イメージ計算、時計とタイマー（個人用）" />
+  <meta name="description" content="赤・青コーナーの購入口数から人気を表示。一口10万円。時計とタイマー（個人用）" />
   <meta name="theme-color" content="#0f1419" />
-  <title>レース情報ボード（個人用）</title>
+  <title>コーナー投票ボード（個人用）</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -16,8 +16,8 @@
   <div class="app">
     <header class="header">
       <div>
-        <h1>レース情報ボード</h1>
-        <p class="lead">オッズ・人気は手入力。配当は100円あたりの目安（単勝イメージ）です。</p>
+        <h1>コーナー投票ボード</h1>
+        <p class="lead">赤コーナーと青コーナーのみ。一口 <strong>10万円</strong>。購入口数を入れると、今の投票割合で人気が分かります。</p>
       </div>
       <div class="clock-block" aria-live="polite">
         <span class="clock-label">現在時刻</span>
@@ -55,55 +55,68 @@
       </div>
     </section>
 
-    <section class="panel" aria-labelledby="odds-heading">
+    <section class="panel" aria-labelledby="vote-heading">
       <div class="panel-head">
-        <h2 id="odds-heading">オッズ・人気リスト</h2>
+        <h2 id="vote-heading">赤コーナー vs 青コーナー</h2>
         <div class="panel-actions">
-          <button type="button" id="add-row" class="btn primary sm">行を追加</button>
-          <button type="button" id="sort-pop" class="btn sm">人気順で並べ替え</button>
-          <button type="button" id="clear-rows" class="btn ghost sm">全削除</button>
+          <button type="button" id="reset-corners" class="btn ghost sm">口数をリセット</button>
           <button type="button" id="export-json" class="btn sm">JSONを保存</button>
           <label class="btn sm file-label">JSONを読込<input type="file" id="import-json" accept="application/json,.json" /></label>
         </div>
       </div>
-      <p class="hint">公表されているオッズをご自身で入力してください。データはこのブラウザ内に自動保存されます（送信しません）。</p>
+      <p class="hint">購入口数は手入力です。合計口数に対する割合＝今の人気イメージです。データはブラウザ内に保存され、送信しません。</p>
       <p id="save-status" class="save-status" aria-live="polite"></p>
 
-      <div class="table-wrap">
-        <table class="odds-table">
-          <thead>
-            <tr>
-              <th scope="col">番号</th>
-              <th scope="col">名前</th>
-              <th scope="col">単勝オッズ</th>
-              <th scope="col">人気</th>
-              <th scope="col">100円あたり払戻（目安）</th>
-              <th scope="col"></th>
-            </tr>
-          </thead>
-          <tbody id="odds-body"></tbody>
-        </table>
+      <div class="unit-price-banner">
+        <span class="unit-price-label">一口</span>
+        <span class="unit-price-value mono">100,000</span>
+        <span class="unit-price-yen">円</span>
       </div>
 
-      <div class="calc-row">
-        <div class="card compact">
-          <h3>賭け金からの払戻（単勝イメージ）</h3>
-          <label class="inline">オッズ <input type="number" id="calc-odds" step="0.1" min="1" placeholder="例: 12.5" /></label>
-          <label class="inline">賭け金（円） <input type="number" id="calc-stake" min="1" value="100" /></label>
-          <p class="result">払戻の目安: <strong id="calc-payout">—</strong> 円</p>
+      <div class="corner-grid">
+        <div class="corner-card corner-red">
+          <div class="corner-card-head">
+            <h3 class="corner-title">赤コーナー</h3>
+            <p class="pop-badge" id="red-badge" aria-live="polite">—</p>
+          </div>
+          <label class="corner-input-label" for="red-units">購入口数</label>
+          <input type="number" id="red-units" class="corner-input mono" min="0" step="1" value="0" inputmode="numeric" />
+          <p class="corner-sub">購入金額 <span id="red-yen" class="mono">0</span> 円</p>
+          <p class="corner-pct mono" id="red-pct">投票シェア —</p>
         </div>
-        <div class="card compact">
-          <h3>オッズから逆算した勝率イメージ（単純モデル）</h3>
-          <p class="small">各オッズの「1÷オッズ」を正規化した割合です。実際の控除率は考慮していません。</p>
-          <button type="button" id="btn-implied" class="btn sm">テーブルから計算</button>
-          <ul id="implied-list" class="implied-list"></ul>
+        <div class="corner-card corner-blue">
+          <div class="corner-card-head">
+            <h3 class="corner-title">青コーナー</h3>
+            <p class="pop-badge" id="blue-badge" aria-live="polite">—</p>
+          </div>
+          <label class="corner-input-label" for="blue-units">購入口数</label>
+          <input type="number" id="blue-units" class="corner-input mono" min="0" step="1" value="0" inputmode="numeric" />
+          <p class="corner-sub">購入金額 <span id="blue-yen" class="mono">0</span> 円</p>
+          <p class="corner-pct mono" id="blue-pct-text">投票シェア —</p>
         </div>
       </div>
+
+      <div class="pop-visual" aria-labelledby="pop-visual-label">
+        <p id="pop-visual-label" class="pop-visual-title">現在の人気（購入口数ベース）</p>
+        <div class="pop-bar-track" role="img" aria-label="赤と青の割合">
+          <div class="pop-bar-seg pop-bar-red" id="bar-red"></div>
+          <div class="pop-bar-seg pop-bar-blue" id="bar-blue"></div>
+        </div>
+        <div class="pop-bar-legend">
+          <span class="legend-red"><span class="legend-dot"></span> 赤 <strong id="legend-red-pct">0</strong>%</span>
+          <span class="legend-blue"><span class="legend-dot"></span> 青 <strong id="legend-blue-pct">0</strong>%</span>
+        </div>
+      </div>
+
+      <p class="total-line">
+        合計 <strong id="total-units" class="mono">0</strong> 口
+        · 合計金額 <strong id="total-yen" class="mono">0</strong> 円
+      </p>
     </section>
 
     <footer class="footer">
-      <p>個人利用・学習用。賭博の勧誘や仲介は行いません。公表データの利用は各提供元の規約に従ってください。</p>
-      <p class="version">レース情報ボード v1.1 · オッズ表はブラウザに自動保存（JSONの保存・読込も可）</p>
+      <p>個人利用・学習用。賭博の勧誘や仲介は行いません。</p>
+      <p class="version">コーナー投票ボード v2 · ブラウザに自動保存（JSONの保存・読込も可）</p>
     </footer>
   </div>
   <noscript><p class="noscript">JavaScript を有効にすると利用できます。</p></noscript>
