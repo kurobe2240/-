@@ -377,6 +377,45 @@ h1 {
   margin: 0;
 }
 
+.footer .version {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+
+.save-status {
+  font-size: 0.8rem;
+  color: var(--muted);
+  min-height: 1.25rem;
+  margin: 0 0 0.75rem;
+  transition: opacity 0.3s;
+}
+
+.save-status.is-ok {
+  color: #7dd3a0;
+}
+
+.file-label {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+}
+
+.file-label input[type="file"] {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.noscript {
+  padding: 2rem;
+  text-align: center;
+  color: var(--danger);
+}
+
 @media (max-width: 640px) {
   .header {
     flex-direction: column;

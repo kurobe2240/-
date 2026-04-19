@@ -1,10 +1,79 @@
 (function () {
   "use strict";
 
+  const STORAGE_KEY = "race-dashboard-v1";
   const $ = (id) => document.getElementById(id);
 
   function pad2(n) {
     return String(n).padStart(2, "0");
+  }
+
+  function escAttr(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  let saveTimer = null;
+  let saveStatusTimer = null;
+
+  function showSaveStatus() {
+    const el = $("save-status");
+    if (!el) return;
+    el.textContent = "ブラウザに保存しました";
+    el.classList.add("is-ok");
+    clearTimeout(saveStatusTimer);
+    saveStatusTimer = setTimeout(function () {
+      el.textContent = "";
+      el.classList.remove("is-ok");
+    }, 2000);
+  }
+
+  function scheduleSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () {
+      saveState();
+      showSaveStatus();
+    }, 250);
+  }
+
+  function collectRows() {
+    const rows = [];
+    oddsBody.querySelectorAll("tr").forEach(function (tr) {
+      rows.push({
+        num: tr.querySelector(".inp-num").value,
+        name: tr.querySelector(".inp-name").value,
+        odds: tr.querySelector(".inp-odds").value,
+        pop: tr.querySelector(".inp-pop").value,
+      });
+    });
+    return rows;
+  }
+
+  function saveState() {
+    const data = {
+      version: 1,
+      rows: collectRows(),
+      calc: {
+        odds: $("calc-odds").value,
+        stake: $("calc-stake").value,
+      },
+      cd: {
+        min: $("cd-min").value,
+        sec: $("cd-sec").value,
+      },
+    };
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (e) {
+      const el = $("save-status");
+      if (el) {
+        el.textContent = "保存できませんでした（容量制限など）";
+        el.classList.remove("is-ok");
+      }
+    }
   }
 
   function tickClock() {
@@ -143,6 +212,14 @@
     cdLeftSec = cdReadInputs();
     cdUpdateDisplay();
     $("cd-pause").disabled = true;
+    saveState();
+  });
+
+  $("cd-min").addEventListener("input", function () {
+    scheduleSave();
+  });
+  $("cd-sec").addEventListener("input", function () {
+    scheduleSave();
   });
 
   cdLeftSec = cdReadInputs();
@@ -168,8 +245,14 @@
     oddsInput.addEventListener("input", updatePayout);
     updatePayout();
 
+    tr.querySelectorAll("input").forEach(function (inp) {
+      inp.addEventListener("input", scheduleSave);
+    });
+
     tr.querySelector(".btn-del").addEventListener("click", function () {
       tr.remove();
+      saveState();
+      showSaveStatus();
     });
   }
 
@@ -182,10 +265,10 @@
     const odds = data && data.odds != null ? data.odds : "";
     const pop = data && data.pop != null ? data.pop : "";
     tr.innerHTML = `
-      <td><input type="text" class="inp-num num" inputmode="numeric" placeholder="1" value="${num}" /></td>
-      <td><input type="text" class="inp-name" placeholder="馬名" value="${name}" /></td>
-      <td><input type="number" class="inp-odds" step="0.1" min="1" placeholder="例: 3.2" value="${odds}" /></td>
-      <td><input type="number" class="inp-pop num" min="1" step="1" placeholder="人気" value="${pop}" /></td>
+      <td><input type="text" class="inp-num num" inputmode="numeric" placeholder="1" value="${escAttr(num)}" /></td>
+      <td><input type="text" class="inp-name" placeholder="馬名" value="${escAttr(name)}" /></td>
+      <td><input type="number" class="inp-odds" step="0.1" min="1" placeholder="例: 3.2" value="${escAttr(odds)}" /></td>
+      <td><input type="number" class="inp-pop num" min="1" step="1" placeholder="人気" value="${escAttr(pop)}" /></td>
       <td class="payout-cell">—</td>
       <td><button type="button" class="btn-icon btn-del">削除</button></td>
     `;
@@ -193,8 +276,52 @@
     attachRowHandlers(tr);
   }
 
+  function applyData(data) {
+    if (!data || !Array.isArray(data.rows)) return false;
+    oddsBody.innerHTML = "";
+    if (data.rows.length === 0) {
+      addRow({ num: "1", name: "", odds: "", pop: "1" });
+      addRow({ num: "2", name: "", odds: "", pop: "2" });
+    } else {
+      data.rows.forEach(function (r) {
+        addRow({
+          num: r.num != null ? r.num : "",
+          name: r.name != null ? r.name : "",
+          odds: r.odds != null ? r.odds : "",
+          pop: r.pop != null ? r.pop : "",
+        });
+      });
+    }
+    if (data.calc) {
+      if (data.calc.odds != null) $("calc-odds").value = data.calc.odds;
+      if (data.calc.stake != null) $("calc-stake").value = data.calc.stake;
+    }
+    if (data.cd) {
+      if (data.cd.min != null) $("cd-min").value = data.cd.min;
+      if (data.cd.sec != null) $("cd-sec").value = data.cd.sec;
+    }
+    cdLeftSec = cdReadInputs();
+    cdUpdateDisplay();
+    updateCalcPayout();
+    saveState();
+    return true;
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return false;
+      const data = JSON.parse(raw);
+      return applyData(data);
+    } catch (e) {
+      return false;
+    }
+  }
+
   $("add-row").addEventListener("click", function () {
     addRow({});
+    saveState();
+    showSaveStatus();
   });
 
   $("sort-pop").addEventListener("click", function () {
@@ -209,14 +336,65 @@
     rows.forEach(function (r) {
       oddsBody.appendChild(r);
     });
+    saveState();
+    showSaveStatus();
   });
 
   $("clear-rows").addEventListener("click", function () {
+    if (!window.confirm("表のすべての行を削除しますか？")) return;
     oddsBody.innerHTML = "";
+    addRow({ num: "1", name: "", odds: "", pop: "1" });
+    addRow({ num: "2", name: "", odds: "", pop: "2" });
+    saveState();
+    showSaveStatus();
   });
 
-  addRow({ num: "1", name: "", odds: "", pop: "1" });
-  addRow({ num: "2", name: "", odds: "", pop: "2" });
+  $("export-json").addEventListener("click", function () {
+    const payload = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      rows: collectRows(),
+      calc: {
+        odds: $("calc-odds").value,
+        stake: $("calc-stake").value,
+      },
+      cd: {
+        min: $("cd-min").value,
+        sec: $("cd-sec").value,
+      },
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "race-dashboard-backup.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  $("import-json").addEventListener("change", function (ev) {
+    const file = ev.target.files && ev.target.files[0];
+    ev.target.value = "";
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function () {
+      try {
+        const data = JSON.parse(reader.result);
+        if (applyData(data)) {
+          showSaveStatus();
+        } else {
+          window.alert("JSONの形式が正しくありません（rows が必要です）。");
+        }
+      } catch (err) {
+        window.alert("ファイルを読み込めませんでした。");
+      }
+    };
+    reader.readAsText(file, "UTF-8");
+  });
+
+  if (!loadState()) {
+    addRow({ num: "1", name: "", odds: "", pop: "1" });
+    addRow({ num: "2", name: "", odds: "", pop: "2" });
+  }
 
   function updateCalcPayout() {
     const odds = parseFloat($("calc-odds").value);
@@ -229,8 +407,14 @@
     $("calc-payout").textContent = p.toLocaleString("ja-JP");
   }
 
-  $("calc-odds").addEventListener("input", updateCalcPayout);
-  $("calc-stake").addEventListener("input", updateCalcPayout);
+  $("calc-odds").addEventListener("input", function () {
+    updateCalcPayout();
+    scheduleSave();
+  });
+  $("calc-stake").addEventListener("input", function () {
+    updateCalcPayout();
+    scheduleSave();
+  });
   updateCalcPayout();
 
   $("btn-implied").addEventListener("click", function () {
@@ -257,8 +441,17 @@
     items.forEach(function (it) {
       const pct = ((it.implied / sum) * 100).toFixed(1);
       const li = document.createElement("li");
-      li.innerHTML = `<span>${it.name}</span><span>${pct}%</span>`;
+      const span1 = document.createElement("span");
+      span1.textContent = it.name;
+      const span2 = document.createElement("span");
+      span2.textContent = pct + "%";
+      li.appendChild(span1);
+      li.appendChild(span2);
       ul.appendChild(li);
     });
+  });
+
+  window.addEventListener("beforeunload", function () {
+    saveState();
   });
 })();

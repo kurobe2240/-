@@ -4,7 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="手入力オッズ・人気順の整理、配当イメージ計算、時計とタイマー（個人用）" />
+  <meta name="theme-color" content="#0f1419" />
   <title>レース情報ボード（個人用）</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
@@ -60,9 +62,12 @@
           <button type="button" id="add-row" class="btn primary sm">行を追加</button>
           <button type="button" id="sort-pop" class="btn sm">人気順で並べ替え</button>
           <button type="button" id="clear-rows" class="btn ghost sm">全削除</button>
+          <button type="button" id="export-json" class="btn sm">JSONを保存</button>
+          <label class="btn sm file-label">JSONを読込<input type="file" id="import-json" accept="application/json,.json" /></label>
         </div>
       </div>
-      <p class="hint">公表されているオッズをご自身で入力してください。サイトはデータを送信しません（ブラウザ内のみ）。</p>
+      <p class="hint">公表されているオッズをご自身で入力してください。データはこのブラウザ内に自動保存されます（送信しません）。</p>
+      <p id="save-status" class="save-status" aria-live="polite"></p>
 
       <div class="table-wrap">
         <table class="odds-table">
@@ -98,8 +103,10 @@
 
     <footer class="footer">
       <p>個人利用・学習用。賭博の勧誘や仲介は行いません。公表データの利用は各提供元の規約に従ってください。</p>
+      <p class="version">レース情報ボード v1.1 · オッズ表はブラウザに自動保存（JSONの保存・読込も可）</p>
     </footer>
   </div>
+  <noscript><p class="noscript">JavaScript を有効にすると利用できます。</p></noscript>
   <script src="js/app.js"></script>
 </body>
 </html>
