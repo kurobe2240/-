@@ -68,17 +68,17 @@ body.page-root {
   padding: clamp(0.35rem, 1vmin, 0.75rem);
 }
 
-/* 背景：ベース色 → ロゴ（適度なサイズ）→ 薄いトーン調整 */
+/* 背景（配信用）：フル画面＋軽いトーン調整 */
 .page-root::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: 0;
   background-color: #8a9cb0;
-  background-image: url("../assets/background.png");
+  background-image: url("../assets/back.png");
   background-repeat: no-repeat;
-  background-position: center 18%;
-  background-size: min(32vw, 380px) auto;
+  background-position: center center;
+  background-size: cover;
   pointer-events: none;
 }
 
@@ -88,12 +88,12 @@ body.page-root {
   inset: 0;
   z-index: 0;
   background:
-    radial-gradient(ellipse 90% 70% at 50% 25%, rgba(255, 255, 255, 0.28) 0%, transparent 55%),
+    radial-gradient(ellipse 90% 70% at 50% 20%, rgba(255, 255, 255, 0.30) 0%, transparent 58%),
     linear-gradient(
       165deg,
-      rgba(230, 238, 248, 0.35) 0%,
-      rgba(45, 58, 78, 0.38) 45%,
-      rgba(18, 26, 38, 0.48) 100%
+      rgba(230, 238, 248, 0.22) 0%,
+      rgba(45, 58, 78, 0.34) 45%,
+      rgba(18, 26, 38, 0.5) 100%
     );
   pointer-events: none;
 }
@@ -205,6 +205,12 @@ h1 {
   font-size: 0.85rem;
   color: var(--muted);
   margin: 0 0 1rem;
+}
+
+/* 配信向け：説明文は出さない（HTMLから消したが保険） */
+.hint,
+.payout-footnote {
+  display: none;
 }
 
 .timer-grid {
@@ -572,6 +578,63 @@ h1 {
   justify-content: space-between;
   gap: 0.5rem;
   margin-bottom: 0.75rem;
+}
+
+.glass-card {
+  /* 参考スタイルをベースに調整 */
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 23px;
+  border: 1px solid rgba(255, 255, 255, 0.30);
+  backdrop-filter: blur(6px) saturate(184%);
+  -webkit-backdrop-filter: blur(6px) saturate(184%);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.corner-main-row {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.corner-left {
+  min-width: 0;
+}
+
+.corner-right {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: end;
+}
+
+.stepper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.step-btn {
+  padding: 0.3rem 0.55rem;
+  border-radius: 10px;
+  font-size: 0.78rem;
+}
+
+.stat {
+  text-align: right;
+}
+
+.stat-label {
+  font-size: 0.72rem;
+  color: rgba(210, 225, 245, 0.88);
+  letter-spacing: 0.06em;
+}
+
+.stat-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffffff;
 }
 
 .corner-title {

@@ -41,6 +41,30 @@
     return Math.round(n).toLocaleString("ja-JP");
   }
 
+  function formatOdds(n) {
+    if (!Number.isFinite(n) || n <= 0) return "—";
+    return n.toFixed(2);
+  }
+
+  function clampUnits(n) {
+    if (!Number.isFinite(n)) return 0;
+    return Math.max(0, Math.floor(n));
+  }
+
+  function setUnits(side, value) {
+    const id = side === "red" ? "red-units" : "blue-units";
+    const inp = $(id);
+    inp.value = String(clampUnits(value));
+  }
+
+  function adjustUnits(side, delta) {
+    const id = side === "red" ? "red-units" : "blue-units";
+    const cur = readUnits($(id));
+    setUnits(side, cur + delta);
+    updatePopularity();
+    scheduleSave();
+  }
+
   function updatePopularity() {
     const r = readUnits($("red-units"));
     const b = readUnits($("blue-units"));
@@ -59,14 +83,16 @@
 
     $("red-payout-est").textContent = "—";
     $("blue-payout-est").textContent = "—";
+    if ($("red-odds")) $("red-odds").textContent = "—";
+    if ($("blue-odds")) $("blue-odds").textContent = "—";
 
     if (total === 0) {
       badgeR.textContent = "—";
       badgeB.textContent = "—";
       badgeR.className = "pop-badge";
       badgeB.className = "pop-badge";
-      $("red-pct").textContent = "投票シェア —";
-      $("blue-pct-text").textContent = "投票シェア —";
+      $("red-pct").textContent = "—";
+      $("blue-pct-text").textContent = "—";
       barR.style.width = "50%";
       barB.style.width = "50%";
       barR.classList.add("is-empty");
@@ -78,9 +104,11 @@
 
     if (r > 0) {
       $("red-payout-est").textContent = formatYen(pool / r);
+      if ($("red-odds")) $("red-odds").textContent = formatOdds(total / r);
     }
     if (b > 0) {
       $("blue-payout-est").textContent = formatYen(pool / b);
+      if ($("blue-odds")) $("blue-odds").textContent = formatOdds(total / b);
     }
 
     barR.classList.remove("is-empty");
@@ -91,10 +119,8 @@
     const rpStr = rp.toFixed(1);
     const bpStr = bp.toFixed(1);
 
-    $("red-pct").textContent =
-      "投票シェア " + rpStr + "%（" + r.toLocaleString("ja-JP") + " / " + total.toLocaleString("ja-JP") + " 口）";
-    $("blue-pct-text").textContent =
-      "投票シェア " + bpStr + "%（" + b.toLocaleString("ja-JP") + " / " + total.toLocaleString("ja-JP") + " 口）";
+    $("red-pct").textContent = rpStr + "%  (" + r.toLocaleString("ja-JP") + "/" + total.toLocaleString("ja-JP") + ")";
+    $("blue-pct-text").textContent = bpStr + "%  (" + b.toLocaleString("ja-JP") + "/" + total.toLocaleString("ja-JP") + ")";
 
     barR.style.width = rp + "%";
     barB.style.width = bp + "%";
@@ -317,6 +343,15 @@
   $("blue-units").addEventListener("input", function () {
     updatePopularity();
     scheduleSave();
+  });
+
+  document.querySelectorAll(".step-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      const side = this.dataset.side;
+      const d = parseInt(this.dataset.delta, 10);
+      if ((side !== "red" && side !== "blue") || !Number.isFinite(d)) return;
+      adjustUnits(side, d);
+    });
   });
 
   $("reset-corners").addEventListener("click", function () {

@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="赤・青コーナーの購入口数から人気を表示。一口10万円。時計とタイマー（個人用）" />
+  <meta name="description" content="赤・青コーナーの口数から人気・オッズ・払戻目安を表示（配信用）" />
   <meta name="theme-color" content="#1a2535" />
   <title>投票</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=5" />
+  <link rel="stylesheet" href="css/style.css?v=6" />
 </head>
 <body class="page-root">
   <div class="app app-shell">
@@ -53,12 +53,11 @@
     <section class="panel" aria-label="コーナー投票">
       <div class="panel-head">
         <div class="panel-actions">
-          <button type="button" id="reset-corners" class="btn ghost sm">口数をリセット</button>
-          <button type="button" id="export-json" class="btn sm">JSONを保存</button>
-          <label class="btn sm file-label">JSONを読込<input type="file" id="import-json" accept="application/json,.json" /></label>
+          <button type="button" id="reset-corners" class="btn ghost sm">リセット</button>
+          <button type="button" id="export-json" class="btn sm">保存</button>
+          <label class="btn sm file-label">読込<input type="file" id="import-json" accept="application/json,.json" /></label>
         </div>
       </div>
-      <p class="hint">購入口数は手入力です。合計口数に対する割合＝今の人気イメージです。データはブラウザ内に保存され、送信しません。</p>
       <p id="save-status" class="save-status" aria-live="polite"></p>
 
       <div class="unit-price-banner surface">
@@ -68,32 +67,74 @@
       </div>
 
       <div class="corner-grid">
-        <div class="corner-card corner-red surface">
+        <div class="corner-card corner-red surface glass-card">
           <div class="corner-card-head">
             <h3 class="corner-title">赤コーナー</h3>
             <p class="pop-badge" id="red-badge" aria-live="polite">—</p>
           </div>
-          <label class="corner-input-label" for="red-units">購入口数</label>
-          <input type="number" id="red-units" class="corner-input mono" min="0" step="1" value="0" inputmode="numeric" />
-          <p class="corner-sub">購入金額 <span id="red-yen" class="mono">0</span> 円</p>
-          <p class="corner-pct mono" id="red-pct">投票シェア —</p>
+          <div class="corner-main-row">
+            <div class="corner-left">
+              <span class="corner-input-label">口数</span>
+              <input type="number" id="red-units" class="corner-input mono" min="0" step="1" value="0" inputmode="numeric" />
+              <div class="stepper" aria-label="赤 口数操作">
+                <button type="button" class="btn sm step-btn" data-side="red" data-delta="-10">-10</button>
+                <button type="button" class="btn sm step-btn" data-side="red" data-delta="-5">-5</button>
+                <button type="button" class="btn sm step-btn" data-side="red" data-delta="-1">-1</button>
+                <button type="button" class="btn sm step-btn" data-side="red" data-delta="+1">+1</button>
+                <button type="button" class="btn sm step-btn" data-side="red" data-delta="+5">+5</button>
+                <button type="button" class="btn sm step-btn" data-side="red" data-delta="+10">+10</button>
+              </div>
+            </div>
+            <div class="corner-right">
+              <div class="stat">
+                <div class="stat-label">オッズ</div>
+                <div id="red-odds" class="stat-value mono">—</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">購入金額</div>
+                <div class="stat-value mono"><span id="red-yen">0</span> 円</div>
+              </div>
+            </div>
+          </div>
+          <p class="corner-pct mono" id="red-pct">—</p>
           <p class="payout-est">
-            <span class="payout-est-label">勝利時 一口払戻目安</span>
+            <span class="payout-est-label">勝利時 一口払戻</span>
             <span id="red-payout-est" class="mono payout-est-value">—</span>
             <span class="payout-est-yen">円</span>
           </p>
         </div>
-        <div class="corner-card corner-blue surface">
+        <div class="corner-card corner-blue surface glass-card">
           <div class="corner-card-head">
             <h3 class="corner-title">青コーナー</h3>
             <p class="pop-badge" id="blue-badge" aria-live="polite">—</p>
           </div>
-          <label class="corner-input-label" for="blue-units">購入口数</label>
-          <input type="number" id="blue-units" class="corner-input mono" min="0" step="1" value="0" inputmode="numeric" />
-          <p class="corner-sub">購入金額 <span id="blue-yen" class="mono">0</span> 円</p>
-          <p class="corner-pct mono" id="blue-pct-text">投票シェア —</p>
+          <div class="corner-main-row">
+            <div class="corner-left">
+              <span class="corner-input-label">口数</span>
+              <input type="number" id="blue-units" class="corner-input mono" min="0" step="1" value="0" inputmode="numeric" />
+              <div class="stepper" aria-label="青 口数操作">
+                <button type="button" class="btn sm step-btn" data-side="blue" data-delta="-10">-10</button>
+                <button type="button" class="btn sm step-btn" data-side="blue" data-delta="-5">-5</button>
+                <button type="button" class="btn sm step-btn" data-side="blue" data-delta="-1">-1</button>
+                <button type="button" class="btn sm step-btn" data-side="blue" data-delta="+1">+1</button>
+                <button type="button" class="btn sm step-btn" data-side="blue" data-delta="+5">+5</button>
+                <button type="button" class="btn sm step-btn" data-side="blue" data-delta="+10">+10</button>
+              </div>
+            </div>
+            <div class="corner-right">
+              <div class="stat">
+                <div class="stat-label">オッズ</div>
+                <div id="blue-odds" class="stat-value mono">—</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">購入金額</div>
+                <div class="stat-value mono"><span id="blue-yen">0</span> 円</div>
+              </div>
+            </div>
+          </div>
+          <p class="corner-pct mono" id="blue-pct-text">—</p>
           <p class="payout-est">
-            <span class="payout-est-label">勝利時 一口払戻目安</span>
+            <span class="payout-est-label">勝利時 一口払戻</span>
             <span id="blue-payout-est" class="mono payout-est-value">—</span>
             <span class="payout-est-yen">円</span>
           </p>
@@ -115,15 +156,13 @@
         合計 <strong id="total-units" class="mono">0</strong> 口
         · 合計金額 <strong id="total-yen" class="mono">0</strong> 円
       </p>
-      <p class="payout-footnote">一口払戻目安＝合計プール÷そのコーナーの口数（控除なしの単純モデル）。実際の配当とは一致しません。</p>
     </section>
 
     <footer class="footer">
-      <p>個人利用・学習用。賭博の勧誘や仲介は行いません。</p>
-      <p class="version">v2 · ブラウザに自動保存</p>
+      <p class="version">v2</p>
     </footer>
   </div>
   <noscript><p class="noscript">JavaScript を有効にすると利用できます。</p></noscript>
-  <script src="js/app.js?v=3"></script>
+  <script src="js/app.js?v=4"></script>
 </body>
 </html>
