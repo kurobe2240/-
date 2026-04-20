@@ -149,6 +149,8 @@
   function saveState() {
     const data = {
       version: 2,
+      redName: $("red-name") ? $("red-name").value : "",
+      blueName: $("blue-name") ? $("blue-name").value : "",
       redUnits: $("red-units").value,
       blueUnits: $("blue-units").value,
       cd: {
@@ -169,6 +171,8 @@
 
   function applyData(data) {
     if (!data || data.version !== 2) return false;
+    if ($("red-name") && data.redName != null) $("red-name").value = data.redName;
+    if ($("blue-name") && data.blueName != null) $("blue-name").value = data.blueName;
     if (data.redUnits != null) $("red-units").value = data.redUnits;
     if (data.blueUnits != null) $("blue-units").value = data.blueUnits;
     if (data.cd) {
@@ -345,6 +349,17 @@
     scheduleSave();
   });
 
+  if ($("red-name")) {
+    $("red-name").addEventListener("input", function () {
+      scheduleSave();
+    });
+  }
+  if ($("blue-name")) {
+    $("blue-name").addEventListener("input", function () {
+      scheduleSave();
+    });
+  }
+
   document.querySelectorAll(".step-btn").forEach(function (btn) {
     btn.addEventListener("click", function () {
       const side = this.dataset.side;
@@ -368,6 +383,8 @@
       version: 2,
       exportedAt: new Date().toISOString(),
       unitPriceYen: UNIT_PRICE,
+      redName: $("red-name") ? $("red-name").value : "",
+      blueName: $("blue-name") ? $("blue-name").value : "",
       redUnits: $("red-units").value,
       blueUnits: $("blue-units").value,
       cd: {

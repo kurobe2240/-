@@ -14,18 +14,18 @@
   --corner-blue-dim: #2563a8;
   --gold: #e8c88a;
   --radius: 14px;
-  --glass-blur-main: 22px;
-  --glass-blur-inner: 12px;
-  --shadow-soft: 0 16px 48px rgba(0, 0, 0, 0.22);
-  --shadow-glass-in: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  --glass-blur-main: 14px;
+  --glass-blur-inner: 6px;
+  --shadow-soft: 0 18px 60px rgba(0, 0, 0, 0.32);
+  --shadow-glass-in: inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 /* メイン枠：すりガラス（背景が透けてぼやける） */
 .app-shell {
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(var(--glass-blur-main)) saturate(165%);
-  -webkit-backdrop-filter: blur(var(--glass-blur-main)) saturate(165%);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(14, 18, 24, 0.58);
+  backdrop-filter: blur(var(--glass-blur-main)) saturate(135%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-main)) saturate(135%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 20px;
   box-shadow: var(--shadow-soft), var(--shadow-glass-in);
   transform: translateZ(0);
@@ -33,12 +33,12 @@
 
 /* 内側パネル：軽いすりガラス（重ねても破綻しにくい弱めブラー） */
 .surface {
-  background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(var(--glass-blur-inner)) saturate(150%);
-  -webkit-backdrop-filter: blur(var(--glass-blur-inner)) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.045);
+  backdrop-filter: blur(var(--glass-blur-inner)) saturate(145%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-inner)) saturate(145%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 *,
@@ -96,6 +96,21 @@ body.page-root {
       rgba(18, 26, 38, 0.5) 100%
     );
   pointer-events: none;
+}
+
+/* ロゴ（ウォーターマーク） */
+.bg-wm {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url("../assets/background.png");
+  background-repeat: no-repeat;
+  background-position: center 22%;
+  background-size: min(34vw, 420px) auto;
+  opacity: 0.22;
+  filter: saturate(0.9) contrast(1.05);
+  mix-blend-mode: multiply;
 }
 
 .app.app-shell {
@@ -584,11 +599,53 @@ h1 {
   /* 参考スタイルをベースに調整 */
   background: rgba(255, 255, 255, 0.02);
   border-radius: 23px;
-  border: 1px solid rgba(255, 255, 255, 0.30);
-  backdrop-filter: blur(6px) saturate(184%);
-  -webkit-backdrop-filter: blur(6px) saturate(184%);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  backdrop-filter: blur(4px) saturate(184%);
+  -webkit-backdrop-filter: blur(4px) saturate(184%);
   color: #ffffff;
   font-weight: 600;
+}
+
+.corner-title-wrap {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.corner-title {
+  margin: 0;
+  font-size: 1.18rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #f8fbff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+}
+
+.corner-card.corner-red .corner-title {
+  color: #ffecec;
+}
+
+.corner-card.corner-blue .corner-title {
+  color: #eaf4ff;
+}
+
+.name-input {
+  width: min(18rem, 100%);
+  padding: 0.42rem 0.6rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.22);
+  color: #ffffff;
+  font-size: 0.92rem;
+}
+
+.name-input::placeholder {
+  color: rgba(230, 240, 255, 0.55);
+}
+
+.name-input:focus {
+  outline: none;
+  border-color: rgba(160, 205, 255, 0.4);
+  box-shadow: 0 0 0 2px rgba(92, 176, 255, 0.15);
 }
 
 .corner-main-row {
