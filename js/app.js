@@ -1,9 +1,39 @@
 (function () {
   "use strict";
 
-  const STORAGE_KEY = "race-dashboard-v2";
-  const UNIT_PRICE = 100000;
+  const STORAGE_KEY = "race-dashboard-v3";
+  const DEFAULT_UNIT_PRICE = 100000;
   const $ = (id) => document.getElementById(id);
+  const settingsState = {
+    unitPrice: DEFAULT_UNIT_PRICE,
+    houseEdgePct: 0,
+    locked: false,
+  };
+
+  function edgeFactor() {
+    const pct = Number(settingsState.houseEdgePct);
+    if (!Number.isFinite(pct)) return 1;
+    return Math.max(0, Math.min(1, 1 - pct / 100));
+  }
+
+  function applySettingsFromInputs() {
+    const up = clampInt(parseInt($("unit-price").value, 10), 1, 1000000000);
+    const he = Number($("house-edge").value);
+    settingsState.unitPrice = up;
+    settingsState.houseEdgePct = Number.isFinite(he) ? Math.max(0, Math.min(50, he)) : 0;
+    $("unit-price-view").textContent = up.toLocaleString("ja-JP");
+  }
+
+  function syncSettingsToInputs() {
+    if ($("unit-price")) $("unit-price").value = String(settingsState.unitPrice);
+    if ($("house-edge")) $("house-edge").value = String(settingsState.houseEdgePct);
+    if ($("unit-price-view")) $("unit-price-view").textContent = settingsState.unitPrice.toLocaleString("ja-JP");
+    const box = document.querySelector(".settings");
+    const note = $("settings-note");
+    if (box) box.classList.toggle("is-locked", settingsState.locked);
+    if (note) note.textContent = settingsState.locked ? "ロック中（編集不可）" : "※表示・計算の設定（シミュレーション）";
+  }
+
 
   function pad2(n) {
     return String(n).padStart(2, "0");
@@ -190,10 +220,13 @@
     const r = readUnits($("red-units"));
     const b = readUnits($("blue-units"));
     const total = r + b;
-    const pool = total * UNIT_PRICE;
+    const unitPrice = settingsState.unitPrice;
+    const pool = total * unitPrice;
+    const factor = edgeFactor();
+    const payoutPool = pool * factor;
 
-    $("red-yen").textContent = (r * UNIT_PRICE).toLocaleString("ja-JP");
-    $("blue-yen").textContent = (b * UNIT_PRICE).toLocaleString("ja-JP");
+    $("red-yen").textContent = (r * unitPrice).toLocaleString("ja-JP");
+    $("blue-yen").textContent = (b * unitPrice).toLocaleString("ja-JP");
     $("total-units").textContent = total.toLocaleString("ja-JP");
     $("total-yen").textContent = pool.toLocaleString("ja-JP");
 
@@ -224,12 +257,12 @@
     }
 
     if (r > 0) {
-      $("red-payout-est").textContent = formatYen(pool / r);
-      if ($("red-odds")) $("red-odds").textContent = formatOdds(total / r);
+      $("red-payout-est").textContent = formatYen(payoutPool / r);
+      if ($("red-odds")) $("red-odds").textContent = formatOdds((total / r) * factor);
     }
     if (b > 0) {
-      $("blue-payout-est").textContent = formatYen(pool / b);
-      if ($("blue-odds")) $("blue-odds").textContent = formatOdds(total / b);
+      $("blue-payout-est").textContent = formatYen(payoutPool / b);
+      if ($("blue-odds")) $("blue-odds").textContent = formatOdds((total / b) * factor);
     }
 
     barR.classList.remove("is-empty");
@@ -269,11 +302,16 @@
 
   function saveState() {
     const data = {
-      version: 2,
+      version: 3,
       redName: $("red-name") ? $("red-name").value : "",
       blueName: $("blue-name") ? $("blue-name").value : "",
       redUnits: $("red-units").value,
       blueUnits: $("blue-units").value,
+      settings: {
+        unitPrice: settingsState.unitPrice,
+        houseEdgePct: settingsState.houseEdgePct,
+        locked: settingsState.locked,
+      },
       rounds: {
         total: roundsState.total,
         current: roundsState.current,
@@ -297,11 +335,24 @@
   }
 
   function applyData(data) {
-    if (!data || data.version !== 2) return false;
+    if (!data || (data.version !== 2 && data.version !== 3)) return false;
     if ($("red-name") && data.redName != null) $("red-name").value = data.redName;
     if ($("blue-name") && data.blueName != null) $("blue-name").value = data.blueName;
     if (data.redUnits != null) $("red-units").value = data.redUnits;
     if (data.blueUnits != null) $("blue-units").value = data.blueUnits;
+    if (data.version === 3 && data.settings) {
+      const up = clampInt(parseInt(data.settings.unitPrice, 10), 1, 1000000000);
+      const he = Number(data.settings.houseEdgePct);
+      settingsState.unitPrice = up;
+      settingsState.houseEdgePct = Number.isFinite(he) ? Math.max(0, Math.min(50, he)) : 0;
+      settingsState.locked = !!data.settings.locked;
+      syncSettingsToInputs();
+    } else {
+      settingsState.unitPrice = DEFAULT_UNIT_PRICE;
+      settingsState.houseEdgePct = 0;
+      settingsState.locked = false;
+      syncSettingsToInputs();
+    }
     roundsState = ensureRoundsShape(data.rounds || roundsDefaults());
     if (data.cd) {
       if (data.cd.min != null) $("cd-min").value = data.cd.min;
@@ -537,9 +588,13 @@
 
   $("export-json").addEventListener("click", function () {
     const payload = {
-      version: 2,
+      version: 3,
       exportedAt: new Date().toISOString(),
-      unitPriceYen: UNIT_PRICE,
+      settings: {
+        unitPrice: settingsState.unitPrice,
+        houseEdgePct: settingsState.houseEdgePct,
+        locked: settingsState.locked,
+      },
       redName: $("red-name") ? $("red-name").value : "",
       blueName: $("blue-name") ? $("blue-name").value : "",
       redUnits: $("red-units").value,
@@ -583,9 +638,36 @@
   });
 
   if (!loadState()) {
+    settingsState.unitPrice = DEFAULT_UNIT_PRICE;
+    settingsState.houseEdgePct = 0;
+    settingsState.locked = false;
+    syncSettingsToInputs();
     roundsState = roundsDefaults();
     renderRounds();
     updatePopularity();
+  }
+
+  /* settings */
+  if ($("settings-apply")) {
+    $("settings-apply").addEventListener("click", function () {
+      if (settingsState.locked) return;
+      applySettingsFromInputs();
+      updatePopularity();
+      scheduleSave();
+    });
+    $("settings-reset").addEventListener("click", function () {
+      if (settingsState.locked) return;
+      settingsState.unitPrice = DEFAULT_UNIT_PRICE;
+      settingsState.houseEdgePct = 0;
+      syncSettingsToInputs();
+      updatePopularity();
+      scheduleSave();
+    });
+    $("settings-lock").addEventListener("click", function () {
+      settingsState.locked = !settingsState.locked;
+      syncSettingsToInputs();
+      scheduleSave();
+    });
   }
 
   window.addEventListener("beforeunload", function () {
