@@ -65,6 +65,116 @@
     scheduleSave();
   }
 
+  function clampInt(n, min, max) {
+    if (!Number.isFinite(n)) return min;
+    return Math.min(max, Math.max(min, Math.floor(n)));
+  }
+
+  function roundsDefaults() {
+    return { total: 3, current: 1, scores: [{ r: 0, b: 0 }, { r: 0, b: 0 }, { r: 0, b: 0 }], history: [] };
+  }
+
+  let roundsState = roundsDefaults();
+
+  function ensureRoundsShape(st) {
+    const total = clampInt(parseInt(st && st.total, 10), 1, 50);
+    const current = clampInt(parseInt(st && st.current, 10), 1, total);
+    const scores = Array.isArray(st && st.scores) ? st.scores.slice(0, total) : [];
+    while (scores.length < total) scores.push({ r: 0, b: 0 });
+    for (let i = 0; i < scores.length; i += 1) {
+      const s = scores[i] || {};
+      scores[i] = { r: clampInt(parseInt(s.r, 10), 0, 99), b: clampInt(parseInt(s.b, 10), 0, 99) };
+    }
+    const history = Array.isArray(st && st.history) ? st.history.slice(-50) : [];
+    return { total, current, scores, history };
+  }
+
+  function roundsTotals(st) {
+    const t = st.scores.reduce(
+      function (acc, s) {
+        acc.r += s.r;
+        acc.b += s.b;
+        return acc;
+      },
+      { r: 0, b: 0 }
+    );
+    return t;
+  }
+
+  function renderRounds() {
+    if (!$("round-total")) return;
+    $("round-total").value = String(roundsState.total);
+    $("round-current").textContent = String(roundsState.current);
+
+    const totals = roundsTotals(roundsState);
+    $("total-red").textContent = String(totals.r);
+    $("total-blue").textContent = String(totals.b);
+
+    const leader = $("leader-badge");
+    leader.className = "leader";
+    if (totals.r > totals.b) {
+      leader.textContent = "赤 優勢";
+      leader.classList.add("is-red");
+    } else if (totals.b > totals.r) {
+      leader.textContent = "青 優勢";
+      leader.classList.add("is-blue");
+    } else {
+      leader.textContent = "同点";
+    }
+
+    const list = $("round-list");
+    list.innerHTML = "";
+    for (let i = 0; i < roundsState.total; i += 1) {
+      const s = roundsState.scores[i];
+      const chip = document.createElement("div");
+      chip.className = "round-chip" + (i + 1 === roundsState.current ? " is-current" : "");
+      chip.innerHTML = `<span class=\"rno\">R${i + 1}</span><span class=\"rs mono\">${s.r}-${s.b}</span>`;
+      chip.addEventListener("click", function () {
+        roundsState.current = i + 1;
+        renderRounds();
+        scheduleSave();
+      });
+      list.appendChild(chip);
+    }
+  }
+
+  function roundsAdd(side) {
+    const idx = roundsState.current - 1;
+    const cur = roundsState.scores[idx];
+    if (side === "red") cur.r = clampInt(cur.r + 1, 0, 99);
+    if (side === "blue") cur.b = clampInt(cur.b + 1, 0, 99);
+    roundsState.history.push({ i: idx, side });
+    roundsState.history = roundsState.history.slice(-50);
+    renderRounds();
+    scheduleSave();
+  }
+
+  function roundsUndo() {
+    const last = roundsState.history.pop();
+    if (!last) return;
+    const cur = roundsState.scores[last.i];
+    if (last.side === "red") cur.r = clampInt(cur.r - 1, 0, 99);
+    if (last.side === "blue") cur.b = clampInt(cur.b - 1, 0, 99);
+    renderRounds();
+    scheduleSave();
+  }
+
+  function roundsResize(total) {
+    roundsState.total = clampInt(total, 1, 50);
+    roundsState.scores = roundsState.scores.slice(0, roundsState.total);
+    while (roundsState.scores.length < roundsState.total) roundsState.scores.push({ r: 0, b: 0 });
+    roundsState.current = clampInt(roundsState.current, 1, roundsState.total);
+    roundsState.history = [];
+    renderRounds();
+    scheduleSave();
+  }
+
+  function roundsNav(delta) {
+    roundsState.current = clampInt(roundsState.current + delta, 1, roundsState.total);
+    renderRounds();
+    scheduleSave();
+  }
+
   function updatePopularity() {
     const r = readUnits($("red-units"));
     const b = readUnits($("blue-units"));
@@ -153,6 +263,12 @@
       blueName: $("blue-name") ? $("blue-name").value : "",
       redUnits: $("red-units").value,
       blueUnits: $("blue-units").value,
+      rounds: {
+        total: roundsState.total,
+        current: roundsState.current,
+        scores: roundsState.scores,
+        history: roundsState.history,
+      },
       cd: {
         min: $("cd-min").value,
         sec: $("cd-sec").value,
@@ -175,6 +291,7 @@
     if ($("blue-name") && data.blueName != null) $("blue-name").value = data.blueName;
     if (data.redUnits != null) $("red-units").value = data.redUnits;
     if (data.blueUnits != null) $("blue-units").value = data.blueUnits;
+    roundsState = ensureRoundsShape(data.rounds || roundsDefaults());
     if (data.cd) {
       if (data.cd.min != null) $("cd-min").value = data.cd.min;
       if (data.cd.sec != null) $("cd-sec").value = data.cd.sec;
@@ -182,6 +299,7 @@
     cdLeftSec = cdReadInputs();
     cdUpdateDisplay();
     updatePopularity();
+    renderRounds();
     saveState();
     return true;
   }
@@ -369,6 +487,34 @@
     });
   });
 
+  /* rounds */
+  if ($("round-total")) {
+    $("round-total").addEventListener("input", function () {
+      roundsResize(parseInt(this.value, 10));
+    });
+    $("round-prev").addEventListener("click", function () {
+      roundsNav(-1);
+    });
+    $("round-next").addEventListener("click", function () {
+      roundsNav(+1);
+    });
+    $("round-reset").addEventListener("click", function () {
+      if (!window.confirm("ラウンド得点をすべて 0 にリセットしますか？")) return;
+      roundsState = roundsDefaults();
+      renderRounds();
+      scheduleSave();
+    });
+    $("score-red").addEventListener("click", function () {
+      roundsAdd("red");
+    });
+    $("score-blue").addEventListener("click", function () {
+      roundsAdd("blue");
+    });
+    $("score-undo").addEventListener("click", function () {
+      roundsUndo();
+    });
+  }
+
   $("reset-corners").addEventListener("click", function () {
     if (!window.confirm("赤・青の購入口数を 0 にリセットしますか？")) return;
     $("red-units").value = "0";
@@ -387,6 +533,11 @@
       blueName: $("blue-name") ? $("blue-name").value : "",
       redUnits: $("red-units").value,
       blueUnits: $("blue-units").value,
+      rounds: {
+        total: roundsState.total,
+        current: roundsState.current,
+        scores: roundsState.scores,
+      },
       cd: {
         min: $("cd-min").value,
         sec: $("cd-sec").value,
@@ -421,6 +572,8 @@
   });
 
   if (!loadState()) {
+    roundsState = roundsDefaults();
+    renderRounds();
     updatePopularity();
   }
 

@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=7" />
+  <link rel="stylesheet" href="css/style.css?v=8" />
 </head>
 <body class="page-root">
   <div class="bg-wm" aria-hidden="true"></div>
@@ -48,6 +48,42 @@
             <button type="button" id="cd-reset" class="btn ghost">リセット</button>
           </div>
         </div>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="ラウンド" id="rounds-panel">
+      <div class="rounds surface">
+        <div class="rounds-head">
+          <div class="rounds-left">
+            <div class="rounds-meta">
+              <span class="rounds-label">R</span>
+              <span class="rounds-current mono" id="round-current">1</span>
+              <span class="rounds-sep">/</span>
+              <input type="number" id="round-total" class="rounds-total mono" min="1" max="50" value="3" />
+            </div>
+            <div class="rounds-nav">
+              <button type="button" id="round-prev" class="btn sm">前</button>
+              <button type="button" id="round-next" class="btn sm">次</button>
+              <button type="button" id="round-reset" class="btn ghost sm">試合リセット</button>
+            </div>
+          </div>
+          <div class="rounds-right">
+            <div class="leader" id="leader-badge">—</div>
+            <div class="totals mono">
+              <span class="tot-red" id="total-red">0</span>
+              <span class="tot-sep">-</span>
+              <span class="tot-blue" id="total-blue">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounds-score">
+          <button type="button" class="btn primary score-btn score-red" id="score-red">赤 +1</button>
+          <button type="button" class="btn primary score-btn score-blue" id="score-blue">青 +1</button>
+          <button type="button" class="btn ghost score-btn" id="score-undo">取消</button>
+        </div>
+
+        <div class="rounds-list" id="round-list" aria-label="ラウンド別得点"></div>
       </div>
     </section>
 
@@ -170,6 +206,6 @@
     </footer>
   </div>
   <noscript><p class="noscript">JavaScript を有効にすると利用できます。</p></noscript>
-  <script src="js/app.js?v=5"></script>
+  <script src="js/app.js?v=6"></script>
 </body>
 </html>

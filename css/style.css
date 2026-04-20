@@ -14,18 +14,18 @@
   --corner-blue-dim: #2563a8;
   --gold: #e8c88a;
   --radius: 14px;
-  --glass-blur-main: 14px;
-  --glass-blur-inner: 6px;
+  --glass-blur-main: 10px;
+  --glass-blur-inner: 4px;
   --shadow-soft: 0 18px 60px rgba(0, 0, 0, 0.32);
   --shadow-glass-in: inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 /* メイン枠：すりガラス（背景が透けてぼやける） */
 .app-shell {
-  background: rgba(14, 18, 24, 0.58);
-  backdrop-filter: blur(var(--glass-blur-main)) saturate(135%);
-  -webkit-backdrop-filter: blur(var(--glass-blur-main)) saturate(135%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(12, 16, 22, 0.38);
+  backdrop-filter: blur(var(--glass-blur-main)) saturate(120%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-main)) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.11);
   border-radius: 20px;
   box-shadow: var(--shadow-soft), var(--shadow-glass-in);
   transform: translateZ(0);
@@ -33,12 +33,12 @@
 
 /* 内側パネル：軽いすりガラス（重ねても破綻しにくい弱めブラー） */
 .surface {
-  background: rgba(255, 255, 255, 0.045);
+  background: rgba(255, 255, 255, 0.026);
   backdrop-filter: blur(var(--glass-blur-inner)) saturate(145%);
   -webkit-backdrop-filter: blur(var(--glass-blur-inner)) saturate(145%);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius);
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 *,
@@ -66,6 +66,7 @@ body.page-root {
   align-items: center;
   justify-content: center;
   padding: clamp(0.35rem, 1vmin, 0.75rem);
+  overflow-x: hidden;
 }
 
 /* 背景（配信用）：フル画面＋軽いトーン調整 */
@@ -108,9 +109,9 @@ body.page-root {
   background-repeat: no-repeat;
   background-position: center 22%;
   background-size: min(34vw, 420px) auto;
-  opacity: 0.22;
-  filter: saturate(0.9) contrast(1.05);
-  mix-blend-mode: multiply;
+  opacity: 0.36;
+  filter: saturate(0.95) contrast(1.18);
+  mix-blend-mode: soft-light;
 }
 
 .app.app-shell {
@@ -126,6 +127,11 @@ body.page-root {
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+/* 横スクロール防止（保険） */
+.app.app-shell * {
+  max-width: 100%;
 }
 
 .header {
@@ -607,25 +613,35 @@ h1 {
 }
 
 .corner-title-wrap {
-  display: grid;
-  gap: 0.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
 }
 
 .corner-title {
   margin: 0;
-  font-size: 1.18rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  color: #f8fbff;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+  font-size: 1.05rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+  text-transform: uppercase;
+  padding: 0.28rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
 }
 
 .corner-card.corner-red .corner-title {
-  color: #ffecec;
+  background: linear-gradient(90deg, rgba(255, 90, 90, 0.38), rgba(0, 0, 0, 0.35));
+  border-color: rgba(255, 160, 160, 0.28);
 }
 
 .corner-card.corner-blue .corner-title {
-  color: #eaf4ff;
+  background: linear-gradient(90deg, rgba(90, 160, 255, 0.38), rgba(0, 0, 0, 0.35));
+  border-color: rgba(160, 205, 255, 0.28);
 }
 
 .name-input {
@@ -646,6 +662,163 @@ h1 {
   outline: none;
   border-color: rgba(160, 205, 255, 0.4);
   box-shadow: 0 0 0 2px rgba(92, 176, 255, 0.15);
+}
+
+/* ラウンド（タイマー下） */
+.rounds {
+  padding: 0.8rem 0.85rem;
+  border-radius: 18px;
+}
+
+.rounds-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.65rem;
+}
+
+.rounds-left {
+  min-width: 0;
+}
+
+.rounds-meta {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+.rounds-label {
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: rgba(230, 240, 255, 0.82);
+}
+
+.rounds-current {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.rounds-sep {
+  opacity: 0.65;
+}
+
+.rounds-total {
+  width: 4.2rem;
+  padding: 0.25rem 0.45rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.22);
+  color: #fff;
+}
+
+.rounds-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.35rem;
+}
+
+.rounds-right {
+  text-align: right;
+}
+
+.leader {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.28rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.22);
+  color: rgba(245, 250, 255, 0.92);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.35rem;
+}
+
+.leader.is-red {
+  border-color: rgba(255, 160, 160, 0.28);
+  background: rgba(255, 80, 80, 0.12);
+}
+
+.leader.is-blue {
+  border-color: rgba(160, 205, 255, 0.28);
+  background: rgba(80, 140, 255, 0.12);
+}
+
+.totals {
+  font-size: 1.35rem;
+  letter-spacing: 0.04em;
+}
+
+.tot-red { color: #ffb3b3; }
+.tot-blue { color: #b6d8ff; }
+.tot-sep { opacity: 0.55; padding: 0 0.25rem; }
+
+.rounds-score {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.score-btn {
+  padding: 0.55rem 0.85rem;
+  font-weight: 900;
+}
+
+.score-red {
+  background: rgba(255, 80, 80, 0.22);
+  border-color: rgba(255, 160, 160, 0.28);
+}
+
+.score-blue {
+  background: rgba(80, 140, 255, 0.2);
+  border-color: rgba(160, 205, 255, 0.28);
+}
+
+.rounds-list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.round-chip {
+  padding: 0.45rem 0.55rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.18);
+  text-align: center;
+}
+
+.round-chip.is-current {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.round-chip .rno {
+  display: block;
+  font-size: 0.7rem;
+  opacity: 0.75;
+  letter-spacing: 0.08em;
+}
+
+.round-chip .rs {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+@media (max-width: 720px) {
+  .rounds-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .rounds-score {
+    grid-template-columns: 1fr 1fr;
+  }
+  #score-undo { grid-column: 1 / -1; }
 }
 
 .corner-main-row {
