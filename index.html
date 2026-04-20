@@ -56,7 +56,7 @@
         <div class="rounds-head">
           <div class="rounds-left">
             <div class="rounds-meta">
-              <span class="rounds-label">R</span>
+              <span class="rounds-label">ROUND</span>
               <span class="rounds-current mono" id="round-current">1</span>
               <span class="rounds-sep">/</span>
               <input type="number" id="round-total" class="rounds-total mono" min="1" max="50" value="3" />
@@ -64,12 +64,13 @@
             <div class="rounds-nav">
               <button type="button" id="round-prev" class="btn sm">前</button>
               <button type="button" id="round-next" class="btn sm">次</button>
-              <button type="button" id="round-reset" class="btn ghost sm">試合リセット</button>
+              <button type="button" id="round-reset" class="btn ghost sm">リセット</button>
             </div>
           </div>
-          <div class="rounds-right">
+
+          <div class="rounds-center" aria-live="polite">
             <div class="leader" id="leader-badge">—</div>
-            <div class="totals mono">
+            <div class="totals mono" id="totals-line">
               <span class="tot-red" id="total-red">0</span>
               <span class="tot-sep">-</span>
               <span class="tot-blue" id="total-blue">0</span>
@@ -77,13 +78,13 @@
           </div>
         </div>
 
+        <div class="rounds-list" id="round-list" aria-label="ラウンド別得点"></div>
+
         <div class="rounds-score">
           <button type="button" class="btn primary score-btn score-red" id="score-red">赤 +1</button>
           <button type="button" class="btn primary score-btn score-blue" id="score-blue">青 +1</button>
           <button type="button" class="btn ghost score-btn" id="score-undo">取消</button>
         </div>
-
-        <div class="rounds-list" id="round-list" aria-label="ラウンド別得点"></div>
       </div>
     </section>
 

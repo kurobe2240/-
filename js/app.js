@@ -101,6 +101,15 @@
     return t;
   }
 
+  function pulse(id) {
+    const el = $(id);
+    if (!el) return;
+    el.classList.remove("pulse");
+    // reflow
+    void el.offsetWidth;
+    el.classList.add("pulse");
+  }
+
   function renderRounds() {
     if (!$("round-total")) return;
     $("round-total").value = String(roundsState.total);
@@ -109,6 +118,7 @@
     const totals = roundsTotals(roundsState);
     $("total-red").textContent = String(totals.r);
     $("total-blue").textContent = String(totals.b);
+    pulse("totals-line");
 
     const leader = $("leader-badge");
     leader.className = "leader";
@@ -121,6 +131,7 @@
     } else {
       leader.textContent = "同点";
     }
+    pulse("leader-badge");
 
     const list = $("round-list");
     list.innerHTML = "";
