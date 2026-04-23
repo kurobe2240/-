@@ -139,9 +139,21 @@ body {
   max-height: min(1080px, calc(100dvh - 0.75rem));
   margin: 0 auto;
   padding: clamp(0.85rem, 2vmin, 1.25rem) clamp(1rem, 2.5vw, 1.5rem) clamp(0.9rem, 2vmin, 1.2rem);
-  overflow-x: hidden;
+  overflow-x: clip;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+/* app-shell内の横スクロールバーも潰す（webkit系） */
+.app.app-shell::-webkit-scrollbar:horizontal {
+  height: 0;
+}
+
+.rounds,
+.rounds-list,
+.corner-grid,
+.corner-main-row {
+  overflow-x: clip;
 }
 
 /* 横スクロール防止（保険） */
