@@ -8,6 +8,7 @@
     unitPrice: DEFAULT_UNIT_PRICE,
     houseEdgePct: 0,
     locked: false,
+    timersHidden: false,
   };
 
   function edgeFactor() {
@@ -17,11 +18,12 @@
   }
 
   function applySettingsFromInputs() {
+    if (!$("unit-price") || !$("house-edge")) return;
     const up = clampInt(parseInt($("unit-price").value, 10), 1, 1000000000);
     const he = Number($("house-edge").value);
     settingsState.unitPrice = up;
     settingsState.houseEdgePct = Number.isFinite(he) ? Math.max(0, Math.min(50, he)) : 0;
-    $("unit-price-view").textContent = up.toLocaleString("ja-JP");
+    if ($("unit-price-view")) $("unit-price-view").textContent = up.toLocaleString("ja-JP");
   }
 
   function syncSettingsToInputs() {
@@ -32,6 +34,7 @@
     const note = $("settings-note");
     if (box) box.classList.toggle("is-locked", settingsState.locked);
     if (note) note.textContent = settingsState.locked ? "ロック中（編集不可）" : "※表示・計算の設定（シミュレーション）";
+    document.body.classList.toggle("is-timers-hidden", !!settingsState.timersHidden);
   }
 
 
@@ -311,6 +314,7 @@
         unitPrice: settingsState.unitPrice,
         houseEdgePct: settingsState.houseEdgePct,
         locked: settingsState.locked,
+        timersHidden: settingsState.timersHidden,
       },
       rounds: {
         total: roundsState.total,
@@ -346,11 +350,13 @@
       settingsState.unitPrice = up;
       settingsState.houseEdgePct = Number.isFinite(he) ? Math.max(0, Math.min(50, he)) : 0;
       settingsState.locked = !!data.settings.locked;
+      settingsState.timersHidden = !!data.settings.timersHidden;
       syncSettingsToInputs();
     } else {
       settingsState.unitPrice = DEFAULT_UNIT_PRICE;
       settingsState.houseEdgePct = 0;
       settingsState.locked = false;
+      settingsState.timersHidden = false;
       syncSettingsToInputs();
     }
     roundsState = ensureRoundsShape(data.rounds || roundsDefaults());
@@ -641,6 +647,7 @@
     settingsState.unitPrice = DEFAULT_UNIT_PRICE;
     settingsState.houseEdgePct = 0;
     settingsState.locked = false;
+    settingsState.timersHidden = false;
     syncSettingsToInputs();
     roundsState = roundsDefaults();
     renderRounds();
@@ -665,6 +672,15 @@
     });
     $("settings-lock").addEventListener("click", function () {
       settingsState.locked = !settingsState.locked;
+      syncSettingsToInputs();
+      scheduleSave();
+    });
+  }
+
+  /* timer toggle (index only) */
+  if ($("toggle-timers")) {
+    $("toggle-timers").addEventListener("click", function () {
+      settingsState.timersHidden = !settingsState.timersHidden;
       syncSettingsToInputs();
       scheduleSave();
     });
