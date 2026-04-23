@@ -70,6 +70,20 @@ body.page-root {
   overflow-x: clip;
 }
 
+/* 横スクロールバー自体を見せない（保険） */
+body {
+  overflow-x: hidden;
+}
+
+* {
+  scrollbar-width: thin;
+}
+
+/* 横方向は常に非表示（webkit系） */
+*::-webkit-scrollbar:horizontal {
+  height: 0;
+}
+
 /* 背景（配信用）：フル画面＋軽いトーン調整 */
 .page-root::before {
   content: "";

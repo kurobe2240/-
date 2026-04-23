@@ -73,7 +73,7 @@
 
   function formatOdds(n) {
     if (!Number.isFinite(n) || n <= 0) return "—";
-    return n.toFixed(2);
+    return n.toFixed(1);
   }
 
   function clampUnits(n) {
