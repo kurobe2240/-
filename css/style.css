@@ -84,6 +84,48 @@ body {
   height: 0;
 }
 
+/* スクロールバーの色（背景になじませる） */
+:root {
+  --sb-track: rgba(0, 0, 0, 0.18);
+  --sb-thumb: rgba(255, 255, 255, 0.12);
+  --sb-thumb-hover: rgba(255, 255, 255, 0.18);
+}
+
+/* Firefox */
+html, body, .app.app-shell {
+  scrollbar-color: var(--sb-thumb) var(--sb-track);
+}
+
+/* Chrome / Edge */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+.app.app-shell::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track,
+.app.app-shell::-webkit-scrollbar-track {
+  background: var(--sb-track);
+}
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb,
+.app.app-shell::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover,
+.app.app-shell::-webkit-scrollbar-thumb:hover {
+  background: var(--sb-thumb-hover);
+  background-clip: padding-box;
+}
+
 /* 背景（配信用）：フル画面＋軽いトーン調整 */
 .page-root::before {
   content: "";
