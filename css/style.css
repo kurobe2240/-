@@ -99,20 +99,23 @@ html, body, .app.app-shell {
 /* Chrome / Edge */
 html::-webkit-scrollbar,
 body::-webkit-scrollbar,
-.app.app-shell::-webkit-scrollbar {
+.app.app-shell::-webkit-scrollbar,
+.app-scroll::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
 html::-webkit-scrollbar-track,
 body::-webkit-scrollbar-track,
-.app.app-shell::-webkit-scrollbar-track {
+.app.app-shell::-webkit-scrollbar-track,
+.app-scroll::-webkit-scrollbar-track {
   background: var(--sb-track);
 }
 
 html::-webkit-scrollbar-thumb,
 body::-webkit-scrollbar-thumb,
-.app.app-shell::-webkit-scrollbar-thumb {
+.app.app-shell::-webkit-scrollbar-thumb,
+.app-scroll::-webkit-scrollbar-thumb {
   background: var(--sb-thumb);
   border-radius: 999px;
   border: 2px solid transparent;
@@ -121,7 +124,8 @@ body::-webkit-scrollbar-thumb,
 
 html::-webkit-scrollbar-thumb:hover,
 body::-webkit-scrollbar-thumb:hover,
-.app.app-shell::-webkit-scrollbar-thumb:hover {
+.app.app-shell::-webkit-scrollbar-thumb:hover,
+.app-scroll::-webkit-scrollbar-thumb:hover {
   background: var(--sb-thumb-hover);
   background-clip: padding-box;
 }
@@ -180,14 +184,27 @@ body::-webkit-scrollbar-thumb:hover,
   max-height: min(1080px, calc(100vh - 0.75rem));
   max-height: min(1080px, calc(100dvh - 0.75rem));
   margin: 0 auto;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* app-shell内の横スクロールバーも潰す（webkit系） */
+.app.app-shell::-webkit-scrollbar:horizontal {
+  height: 0;
+}
+
+/* 内側スクロール（角丸の内側で完結させる） */
+.app-scroll {
+  height: 100%;
+  max-height: min(1080px, calc(100vh - 0.75rem));
+  max-height: min(1080px, calc(100dvh - 0.75rem));
   padding: clamp(0.85rem, 2vmin, 1.25rem) clamp(1rem, 2.5vw, 1.5rem) clamp(0.9rem, 2vmin, 1.2rem);
   overflow-x: clip;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-/* app-shell内の横スクロールバーも潰す（webkit系） */
-.app.app-shell::-webkit-scrollbar:horizontal {
+.app-scroll::-webkit-scrollbar:horizontal {
   height: 0;
 }
 

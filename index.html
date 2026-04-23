@@ -10,18 +10,19 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=10" />
+  <link rel="stylesheet" href="css/style.css?v=12" />
 </head>
 <body class="page-root">
   <div class="bg-wm" aria-hidden="true"></div>
   <div class="app app-shell">
-    <header class="header">
-      <div class="clock-block" aria-live="polite">
-        <span class="clock-label">現在時刻</span>
-        <time id="clock" class="clock">--:--:--</time>
-        <span id="clock-date" class="clock-date"></span>
-      </div>
-    </header>
+    <div class="app-scroll">
+      <header class="header">
+        <div class="clock-block" aria-live="polite">
+          <span class="clock-label">現在時刻</span>
+          <time id="clock" class="clock">--:--:--</time>
+          <span id="clock-date" class="clock-date"></span>
+        </div>
+      </header>
 
     <section class="panel" aria-label="タイマー">
       <div class="timer-grid">
@@ -223,9 +224,10 @@
       </div>
     </section>
 
-    <footer class="footer">
-      <p class="version">v2</p>
-    </footer>
+      <footer class="footer">
+        <p class="version">v2</p>
+      </footer>
+    </div>
   </div>
   <noscript><p class="noscript">JavaScript を有効にすると利用できます。</p></noscript>
   <script src="js/app.js?v=7"></script>
